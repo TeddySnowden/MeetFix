@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import JoinGroup from "./pages/JoinGroup";
 import GroupDetail from "./pages/GroupDetail";
 import EventDetail from "./pages/EventDetail";
+import Groups from "./pages/Groups";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/join/:inviteCode" element={<JoinGroup />} />
             <Route path="/g/:groupId" element={<GroupDetail />} />
             <Route path="/e/:eventId" element={<EventDetail />} />
+            <Route path="/groups" element={<Groups />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
