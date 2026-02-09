@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      bring_items: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          emoji: string | null
+          event_id: string
+          id: string
+          is_suggestion: boolean | null
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          emoji?: string | null
+          event_id: string
+          id?: string
+          is_suggestion?: boolean | null
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          emoji?: string | null
+          event_id?: string
+          id?: string
+          is_suggestion?: boolean | null
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bring_items_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           created_at: string
@@ -105,6 +143,35 @@ export type Database = {
         }
         Relationships: []
       }
+      item_claims: {
+        Row: {
+          claimed_at: string | null
+          id: string
+          item_id: string
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          id?: string
+          item_id: string
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string | null
+          id?: string
+          item_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_claims_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: true
+            referencedRelation: "bring_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       time_slot_votes: {
         Row: {
           created_at: string
@@ -188,6 +255,7 @@ export type Database = {
         Returns: boolean
       }
       get_event_group_id: { Args: { event_id_input: string }; Returns: string }
+      get_item_group_id: { Args: { item_id_input: string }; Returns: string }
       is_event_creator: { Args: { event_id_input: string }; Returns: boolean }
       is_group_owner: { Args: { group_id_input: string }; Returns: boolean }
     }
