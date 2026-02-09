@@ -75,7 +75,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_view_group_members: {
+        Args: { group_id_input: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
