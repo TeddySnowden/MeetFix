@@ -175,6 +175,38 @@ export function useUpdateGroup() {
   });
 }
 
+export function useJoinGroupById() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (groupId: string) => {
+      if (!user) throw new Error("Must be signed in");
+
+      // Check if already a member
+      const { data: existing } = await supabase
+        .from("group_members")
+        .select("id")
+        .eq("group_id", groupId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (existing) return { alreadyMember: true };
+
+      const { error: joinErr } = await supabase
+        .from("group_members")
+        .insert({ group_id: groupId, user_id: user.id, role: "member" });
+
+      if (joinErr) throw joinErr;
+
+      return { alreadyMember: false };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+    },
+  });
+}
+
 export function useGroupByInviteCode(inviteCode: string | undefined) {
   return useQuery({
     queryKey: ["group-invite", inviteCode],
