@@ -123,6 +123,41 @@ export type Database = {
           },
         ]
       }
+      event_user_timeline: {
+        Row: {
+          created_at: string
+          dress_up_time: string | null
+          event_id: string
+          id: string
+          travel_time: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dress_up_time?: string | null
+          event_id: string
+          id?: string
+          travel_time?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dress_up_time?: string | null
+          event_id?: string
+          id?: string
+          travel_time?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_user_timeline_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           created_at: string
