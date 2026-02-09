@@ -14,6 +14,77 @@ export type Database = {
   }
   public: {
     Tables: {
+      activities: {
+        Row: {
+          created_at: string
+          created_by: string
+          event_id: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          event_id: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          event_id?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activities_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      activity_votes: {
+        Row: {
+          activity_id: string
+          created_at: string
+          event_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          activity_id: string
+          created_at?: string
+          event_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          activity_id?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_votes_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_votes_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bring_items: {
         Row: {
           created_at: string | null
@@ -56,6 +127,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string
+          finalized_activity: string | null
           finalized_date: string | null
           finalized_slot_id: string | null
           group_id: string
@@ -66,6 +138,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by: string
+          finalized_activity?: string | null
           finalized_date?: string | null
           finalized_slot_id?: string | null
           group_id: string
@@ -76,6 +149,7 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string
+          finalized_activity?: string | null
           finalized_date?: string | null
           finalized_slot_id?: string | null
           group_id?: string
