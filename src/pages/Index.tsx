@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { CreateGroupDialog } from "@/components/CreateGroupDialog";
+import { ChecklistModal } from "@/components/ChecklistModal";
 import { useState } from "react";
 import { User, Clock, Sparkles, Calendar, Plus, CheckSquare, Users, ChevronRight } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -25,6 +26,7 @@ const Index = () => {
   const { data: heroEvent } = useNearestFinalizedEvent();
   const { data: heroItems } = useBringItems(heroEvent?.id);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [checklistOpen, setChecklistOpen] = useState(false);
   const navigate = useNavigate();
 
   if (loading) {
@@ -181,7 +183,7 @@ const Index = () => {
             </button>
             <button
               className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col items-center gap-3 hover:scale-[1.02] transition-all"
-              onClick={() => heroEvent && navigate(`/e/${heroEvent.id}`)}
+              onClick={() => setChecklistOpen(true)}
             >
               <CheckSquare className="w-6 h-6 text-white/60" />
               <span className="text-sm font-semibold text-white/60">Checklist</span>
@@ -213,6 +215,7 @@ const Index = () => {
       )}
 
       <CreateGroupDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <ChecklistModal open={checklistOpen} onOpenChange={setChecklistOpen} />
     </div>
   );
 };
