@@ -20,8 +20,9 @@ import { Layout } from "@/components/Layout";
 import { Header } from "@/components/Header";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
-import { useGroups, useDeleteGroup, useUpdateGroup, useJoinGroupById } from "@/hooks/useGroups";
+import { useGroups, useDeleteGroup, useUpdateGroup } from "@/hooks/useGroups";
 import { useGroupEventsWithSlots, EventWithSlotInfo, useDeleteEvent } from "@/hooks/useEvents";
+import { useAutoJoinGroup } from "@/hooks/useAutoJoinGroup";
 import { AddEventDialog } from "@/components/AddEventDialog";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { Loader2 } from "lucide-react";
@@ -50,26 +51,10 @@ export default function GroupDetail() {
   const deleteGroup = useDeleteGroup();
   const deleteEvent = useDeleteEvent();
   const updateGroup = useUpdateGroup();
-  const joinGroupById = useJoinGroupById();
-  const [autoJoinDone, setAutoJoinDone] = useState(false);
+
+  useAutoJoinGroup(groupId);
 
   const group = groups?.find((g) => g.id === groupId);
-
-  // Auto-join group when authenticated user visits /g/:groupId
-  useEffect(() => {
-    if (!user || !groupId || autoJoinDone || joinGroupById.isPending) return;
-    setAutoJoinDone(true);
-    joinGroupById.mutate(groupId, {
-      onSuccess: (result) => {
-        if (!result.alreadyMember) {
-          toast({ title: "Joined group!" });
-        }
-      },
-      onError: (err) => {
-        toast({ title: "Couldn't join group", description: err.message, variant: "destructive" });
-      },
-    });
-  }, [user, groupId, autoJoinDone]);
 
   // Auto-open wizard after group creation
   useEffect(() => {
