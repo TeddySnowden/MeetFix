@@ -56,6 +56,8 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string
+          finalized_date: string | null
+          finalized_slot_id: string | null
           group_id: string
           id: string
           name: string
@@ -64,6 +66,8 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by: string
+          finalized_date?: string | null
+          finalized_slot_id?: string | null
           group_id: string
           id?: string
           name?: string
@@ -72,12 +76,21 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string
+          finalized_date?: string | null
+          finalized_slot_id?: string | null
           group_id?: string
           id?: string
           name?: string
           status?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "events_finalized_slot_id_fkey"
+            columns: ["finalized_slot_id"]
+            isOneToOne: false
+            referencedRelation: "time_slots"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "events_group_id_fkey"
             columns: ["group_id"]
