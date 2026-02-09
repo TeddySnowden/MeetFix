@@ -1,15 +1,22 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Plus, Calendar, Users, Vote, UserPlus } from "lucide-react";
+import { ArrowLeft, Plus, Calendar, Users, Vote, UserPlus, Trash2, MoreVertical } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Layout } from "@/components/Layout";
 import { Header } from "@/components/Header";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
-import { useGroups } from "@/hooks/useGroups";
-import { useGroupEventsWithSlots, EventWithSlotInfo } from "@/hooks/useEvents";
+import { useGroups, useDeleteGroup } from "@/hooks/useGroups";
+import { useGroupEventsWithSlots, EventWithSlotInfo, useDeleteEvent } from "@/hooks/useEvents";
 import { AddEventDialog } from "@/components/AddEventDialog";
 
 export default function GroupDetail() {
@@ -20,6 +27,10 @@ export default function GroupDetail() {
   const { data: events, isLoading } = useGroupEventsWithSlots(groupId);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [deleteGroupOpen, setDeleteGroupOpen] = useState(false);
+  const [deleteEventId, setDeleteEventId] = useState<string | null>(null);
+  const deleteGroup = useDeleteGroup();
+  const deleteEvent = useDeleteEvent();
 
   const group = groups?.find((g) => g.id === groupId);
 
@@ -31,6 +42,7 @@ export default function GroupDetail() {
     }
   }, [searchParams, setSearchParams]);
   const memberCount = group?.member_count ?? 0;
+  const isOwner = user?.id === group?.created_by;
 
   return (
     <Layout>
@@ -58,6 +70,16 @@ export default function GroupDetail() {
             </p>
           )}
         </div>
+        {isOwner && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full text-destructive hover:text-destructive"
+            onClick={() => setDeleteGroupOpen(true)}
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        )}
       </div>
 
       {/* Events list */}
@@ -103,6 +125,29 @@ export default function GroupDetail() {
                     </p>
                   </div>
                 </button>
+                <div className="absolute top-2 right-2 flex items-center gap-1">
+                  {(isOwner || ev.created_by === user?.id) && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => e.stopPropagation()}>
+                          <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteEventId(ev.id);
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete Event
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </div>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -160,6 +205,66 @@ export default function GroupDetail() {
           groupId={groupId}
         />
       )}
+
+      {/* Delete Group AlertDialog */}
+      <AlertDialog open={deleteGroupOpen} onOpenChange={setDeleteGroupOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete group?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the group, all events, votes, and items. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (!groupId) return;
+                deleteGroup.mutate(groupId, {
+                  onSuccess: () => {
+                    toast({ title: "Group deleted" });
+                    navigate("/");
+                  },
+                  onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+                });
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Event AlertDialog */}
+      <AlertDialog open={!!deleteEventId} onOpenChange={(open) => !open && setDeleteEventId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete event?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this event, its time slots, activities, votes, and items.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (!deleteEventId || !groupId) return;
+                deleteEvent.mutate({ eventId: deleteEventId, groupId }, {
+                  onSuccess: () => {
+                    toast({ title: "Event deleted" });
+                    setDeleteEventId(null);
+                  },
+                  onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+                });
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Layout>
   );
 }

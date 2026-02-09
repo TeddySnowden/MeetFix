@@ -140,6 +140,23 @@ export function useJoinGroup() {
   });
 }
 
+export function useDeleteGroup() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (groupId: string) => {
+      const { error } = await supabase
+        .from("groups")
+        .delete()
+        .eq("id", groupId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+    },
+  });
+}
+
 export function useGroupByInviteCode(inviteCode: string | undefined) {
   return useQuery({
     queryKey: ["group-invite", inviteCode],
