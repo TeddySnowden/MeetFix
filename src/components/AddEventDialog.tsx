@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2, Plus, X, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,25 +47,20 @@ function timeOptions(): string[] {
 
 const TIMES = timeOptions();
 const DURATIONS = ["1h", "2h", "3h"];
-const ACTIVITY_PRESETS = ["BBQ", "Drinks", "Hike", "Custom"];
 
 interface SlotState {
   date: Date | undefined;
   time: string;
   duration: string;
+  popoverOpen: boolean;
 }
 
-interface ActivityState {
-  preset: string;
-  custom: string;
-}
-
-const defaultSlot = (): SlotState => ({ date: undefined, time: "18:00", duration: "2h" });
-const defaultActivity = (): ActivityState => ({ preset: "", custom: "" });
+const defaultSlot = (): SlotState => ({ date: undefined, time: "18:00", duration: "2h", popoverOpen: false });
 
 export function AddEventDialog({ open, onOpenChange, groupId }: AddEventDialogProps) {
-  const [slots, setSlots] = useState<SlotState[]>([defaultSlot(), defaultSlot(), defaultSlot()]);
-  const [activities, setActivities] = useState<ActivityState[]>([defaultActivity(), defaultActivity(), defaultActivity()]);
+  const [step, setStep] = useState(0); // 0 = dates, 1 = activities
+  const [slots, setSlots] = useState<SlotState[]>([defaultSlot()]);
+  const [activities, setActivities] = useState<string[]>([""]);
   const createEvent = useCreateEvent();
   const navigate = useNavigate();
 
@@ -73,23 +68,41 @@ export function AddEventDialog({ open, onOpenChange, groupId }: AddEventDialogPr
     setSlots((prev) => prev.map((s, i) => (i === idx ? { ...s, ...patch } : s)));
   };
 
-  const updateActivity = (idx: number, patch: Partial<ActivityState>) => {
-    setActivities((prev) => prev.map((a, i) => (i === idx ? { ...a, ...patch } : a)));
+  const addSlot = () => {
+    if (slots.length < 3) setSlots((prev) => [...prev, defaultSlot()]);
   };
 
-  const getActivityName = (a: ActivityState) => (a.preset === "Custom" ? a.custom.trim() : a.preset);
+  const removeSlot = (idx: number) => {
+    if (slots.length > 1) setSlots((prev) => prev.filter((_, i) => i !== idx));
+  };
 
-  const allSlotsValid = slots.every((s) => s.date && s.time && s.duration);
-  const allActivitiesValid = activities.every((a) => getActivityName(a).length > 0);
-  const canCreate = allSlotsValid && allActivitiesValid;
+  const addActivity = () => {
+    if (activities.length < 3) setActivities((prev) => [...prev, ""]);
+  };
+
+  const removeActivity = (idx: number) => {
+    if (activities.length > 1) setActivities((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const updateActivity = (idx: number, value: string) => {
+    setActivities((prev) => prev.map((a, i) => (i === idx ? value : a)));
+  };
+
+  const allSlotsValid = slots.length >= 1 && slots.every((s) => s.date && s.time && s.duration);
+  const allActivitiesValid = activities.length >= 1 && activities.every((a) => a.trim().length > 0);
 
   const handleCreate = async () => {
+    if (!allSlotsValid || !allActivitiesValid) {
+      toast({ title: "Missing fields", description: "Fill all date slots and activities.", variant: "destructive" });
+      return;
+    }
+
     const slotInputs: SlotInput[] = slots.map((s) => ({
       date: s.date!,
       time: s.time,
       duration: s.duration,
     }));
-    const activityNames = activities.map(getActivityName);
+    const activityNames = activities.map((a) => a.trim());
 
     try {
       const event = await createEvent.mutateAsync({
@@ -98,7 +111,7 @@ export function AddEventDialog({ open, onOpenChange, groupId }: AddEventDialogPr
         slots: slotInputs,
         activities: activityNames,
       });
-      toast({ title: "Event created!", description: "3 date slots + 3 activities added." });
+      toast({ title: "Event created!", description: `${slots.length} date slots + ${activities.length} activities added.` });
       resetAndClose();
       navigate(`/e/${event.id}`);
     } catch (err: any) {
@@ -107,28 +120,54 @@ export function AddEventDialog({ open, onOpenChange, groupId }: AddEventDialogPr
   };
 
   const resetAndClose = () => {
-    setSlots([defaultSlot(), defaultSlot(), defaultSlot()]);
-    setActivities([defaultActivity(), defaultActivity(), defaultActivity()]);
+    setStep(0);
+    setSlots([defaultSlot()]);
+    setActivities([""]);
     onOpenChange(false);
   };
+
+  const handleDateSelect = useCallback((idx: number, d: Date | undefined) => {
+    updateSlot(idx, { date: d, popoverOpen: false });
+  }, []);
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) resetAndClose(); else onOpenChange(v); }}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Event</DialogTitle>
-          <DialogDescription>Pick 3 date slots and 3 activity options for the group to vote on.</DialogDescription>
+          <DialogDescription>
+            {step === 0
+              ? "Add 1–3 date slots for the group to vote on."
+              : "Add 1–3 activity options for the group to vote on."}
+          </DialogDescription>
         </DialogHeader>
 
-        {/* Date Slots Section */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Date Slots</h3>
-          <div className="grid gap-3">
+        {/* Step indicators */}
+        <div className="flex items-center gap-2 mb-2">
+          {["Date Slots", "Activities"].map((label, i) => (
+            <div key={i} className="flex items-center gap-2">
+              {i > 0 && <div className="w-6 h-px bg-border" />}
+              <div className={cn(
+                "flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full transition-colors",
+                step === i ? "bg-primary text-primary-foreground" : step > i ? "bg-primary/20 text-primary" : "bg-secondary text-muted-foreground"
+              )}>
+                <span className="w-4 h-4 rounded-full bg-background/20 flex items-center justify-center text-[10px] font-bold">{i + 1}</span>
+                {label}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {step === 0 && (
+          <div className="space-y-3">
+            {slots.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-4">Add date slots for voting (1–3 required)</p>
+            )}
             {slots.map((slot, idx) => (
               <div key={idx} className="flex items-end gap-2 bg-secondary/50 rounded-lg p-3">
                 <div className="flex-1 min-w-0 space-y-1">
                   <Label className="text-xs">Date {idx + 1}</Label>
-                  <Popover>
+                  <Popover open={slot.popoverOpen} onOpenChange={(o) => updateSlot(idx, { popoverOpen: o })}>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
@@ -143,7 +182,7 @@ export function AddEventDialog({ open, onOpenChange, groupId }: AddEventDialogPr
                       <Calendar
                         mode="single"
                         selected={slot.date}
-                        onSelect={(d) => updateSlot(idx, { date: d })}
+                        onSelect={(d) => handleDateSelect(idx, d)}
                         disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
                         initialFocus
                         className="p-3 pointer-events-auto"
@@ -177,53 +216,78 @@ export function AddEventDialog({ open, onOpenChange, groupId }: AddEventDialogPr
                     </SelectContent>
                   </Select>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 flex-shrink-0"
+                  disabled={slots.length <= 1}
+                  onClick={() => removeSlot(idx)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
               </div>
             ))}
+            {slots.length < 3 && (
+              <Button variant="outline" size="sm" className="w-full" onClick={addSlot}>
+                <Plus className="w-4 h-4 mr-1" /> Add Date Slot
+              </Button>
+            )}
+            <Button
+              className="w-full gradient-primary mt-2"
+              disabled={!allSlotsValid}
+              onClick={() => setStep(1)}
+            >
+              Next <ArrowRight className="w-4 h-4 ml-1" />
+            </Button>
           </div>
-        </div>
+        )}
 
-        {/* Activity Options Section */}
-        <div className="space-y-3 mt-2">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Activity Options</h3>
-          <div className="space-y-2">
+        {step === 1 && (
+          <div className="space-y-3">
+            {activities.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-4">Add activities (1–3 required)</p>
+            )}
             {activities.map((act, idx) => (
               <div key={idx} className="flex items-end gap-2 bg-secondary/50 rounded-lg p-3">
                 <div className="flex-1 space-y-1">
                   <Label className="text-xs">Activity {idx + 1}</Label>
-                  <Select value={act.preset} onValueChange={(v) => updateActivity(idx, { preset: v, custom: v === "Custom" ? act.custom : "" })}>
-                    <SelectTrigger className="h-9 text-sm">
-                      <SelectValue placeholder="Choose..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ACTIVITY_PRESETS.map((a) => (
-                        <SelectItem key={a} value={a}>{a}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Input
+                    value={act}
+                    onChange={(e) => updateActivity(idx, e.target.value)}
+                    placeholder="e.g. BBQ, Drinks, Hike..."
+                    className="h-9 text-sm"
+                  />
                 </div>
-                {act.preset === "Custom" && (
-                  <div className="flex-1 space-y-1">
-                    <Label className="text-xs">Name</Label>
-                    <Input
-                      value={act.custom}
-                      onChange={(e) => updateActivity(idx, { custom: e.target.value })}
-                      placeholder="e.g. Bowling"
-                      className="h-9 text-sm"
-                    />
-                  </div>
-                )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 flex-shrink-0"
+                  disabled={activities.length <= 1}
+                  onClick={() => removeActivity(idx)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
               </div>
             ))}
+            {activities.length < 3 && (
+              <Button variant="outline" size="sm" className="w-full" onClick={addActivity}>
+                <Plus className="w-4 h-4 mr-1" /> Add Activity
+              </Button>
+            )}
+            <div className="flex gap-2 mt-2">
+              <Button variant="outline" className="flex-1" onClick={() => setStep(0)}>
+                Back
+              </Button>
+              <Button
+                className="flex-1 gradient-primary"
+                disabled={!allActivitiesValid || createEvent.isPending}
+                onClick={handleCreate}
+              >
+                {createEvent.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Event"}
+              </Button>
+            </div>
           </div>
-        </div>
-
-        <Button
-          className="w-full gradient-primary mt-4"
-          disabled={!canCreate || createEvent.isPending}
-          onClick={handleCreate}
-        >
-          {createEvent.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Event"}
-        </Button>
+        )}
       </DialogContent>
     </Dialog>
   );
