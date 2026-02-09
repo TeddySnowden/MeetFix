@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Plus, Calendar, Users, Vote, UserPlus, Trash2, MoreVertical } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -82,6 +82,32 @@ export default function GroupDetail() {
         )}
       </div>
 
+      {/* Invite row */}
+      {group && (
+        <div className="flex items-center justify-between p-3 bg-muted rounded-lg mb-6">
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary">
+              {memberCount} {memberCount === 1 ? "member" : "members"}
+            </Badge>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-xs font-mono text-muted-foreground">/join/{group.invite_code}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={async () => {
+                const link = `${window.location.origin}/join/${group.invite_code}`;
+                await navigator.clipboard.writeText(link);
+                toast({ title: "Copied!", description: link });
+              }}
+            >
+              <UserPlus className="w-3.5 h-3.5 mr-1" />
+              Copy
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Events list */}
       {isLoading ? (
         <div className="flex justify-center py-12">
@@ -148,27 +174,6 @@ export default function GroupDetail() {
                     </DropdownMenu>
                   )}
                 </div>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="absolute bottom-2 right-2 text-xs text-muted-foreground"
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          const link = `${window.location.origin}/join/${group?.invite_code}`;
-                          await navigator.clipboard.writeText(link);
-                          toast({ title: "Copied!", description: link });
-                        }}
-                      >
-                        <UserPlus className="w-3.5 h-3.5 mr-1" />
-                        Invite
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Invite friends to vote/join this group</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
               </div>
             );
           })}
