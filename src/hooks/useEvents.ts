@@ -44,12 +44,87 @@ export function useGroupEvents(groupId: string | undefined) {
   });
 }
 
+export interface EventWithSlotInfo extends Event {
+  first_slot_at: string | null;
+  total_votes: number;
+}
+
+export function useGroupEventsWithSlots(groupId: string | undefined) {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ["events", groupId, "with-slots"],
+    queryFn: async (): Promise<EventWithSlotInfo[]> => {
+      if (!groupId) return [];
+
+      const { data: events, error } = await supabase
+        .from("events")
+        .select("*")
+        .eq("group_id", groupId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      if (!events?.length) return [];
+
+      const eventIds = events.map((e: any) => e.id);
+
+      // Fetch first time slot per event
+      const { data: slots } = await supabase
+        .from("time_slots")
+        .select("event_id, slot_at")
+        .in("event_id", eventIds)
+        .order("slot_at", { ascending: true });
+
+      // Fetch vote counts
+      const { data: votes } = await supabase
+        .from("time_slot_votes")
+        .select("event_id")
+        .in("event_id", eventIds);
+
+      // Build first-slot map (earliest per event)
+      const firstSlotMap: Record<string, string> = {};
+      (slots || []).forEach((s: any) => {
+        if (!firstSlotMap[s.event_id]) {
+          firstSlotMap[s.event_id] = s.slot_at;
+        }
+      });
+
+      // Build vote count map
+      const voteCountMap: Record<string, number> = {};
+      (votes || []).forEach((v: any) => {
+        voteCountMap[v.event_id] = (voteCountMap[v.event_id] || 0) + 1;
+      });
+
+      return events.map((e: any) => ({
+        ...e,
+        first_slot_at: firstSlotMap[e.id] || null,
+        total_votes: voteCountMap[e.id] || 0,
+      }));
+    },
+    enabled: !!groupId && !!user,
+  });
+}
+
+export interface SlotInput {
+  date: Date;   // calendar date
+  time: string; // "HH:mm"
+  duration: string; // "1h" | "2h" | "3h"
+}
+
 export function useCreateEvent() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ groupId, name }: { groupId: string; name: string }) => {
+    mutationFn: async ({
+      groupId,
+      name,
+      slots: slotInputs,
+    }: {
+      groupId: string;
+      name: string;
+      slots: SlotInput[];
+    }) => {
       if (!user?.id) throw new Error("Not authenticated");
 
       // Create event
@@ -61,22 +136,21 @@ export function useCreateEvent() {
 
       if (error) throw error;
 
-      // Auto-create 3 time slots for next 3 days at 18:00 local
-      const slots = [];
-      for (let i = 1; i <= 3; i++) {
-        const d = new Date();
-        d.setDate(d.getDate() + i);
-        d.setHours(18, 0, 0, 0);
-        slots.push({
+      // Build time slot rows from explicit inputs
+      const slotRows = slotInputs.map((s) => {
+        const [h, m] = s.time.split(":").map(Number);
+        const d = new Date(s.date);
+        d.setHours(h, m, 0, 0);
+        return {
           event_id: event.id,
           slot_at: d.toISOString(),
           created_by: user.id,
-        });
-      }
+        };
+      });
 
       const { error: slotErr } = await supabase
         .from("time_slots")
-        .insert(slots);
+        .insert(slotRows);
 
       if (slotErr) throw slotErr;
 
