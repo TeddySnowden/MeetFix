@@ -347,6 +347,24 @@ export function useFinalizeEvent() {
   });
 }
 
+export function useDeleteEvent() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ eventId, groupId }: { eventId: string; groupId: string }) => {
+      const { error } = await supabase
+        .from("events")
+        .delete()
+        .eq("id", eventId);
+      if (error) throw error;
+      return { groupId };
+    },
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["events", vars.groupId] });
+    },
+  });
+}
+
 export function useToggleVote() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
