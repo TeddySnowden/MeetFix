@@ -11,6 +11,17 @@ export interface Event {
   created_at: string;
   finalized_slot_id: string | null;
   finalized_date: string | null;
+  finalized_activity: string | null;
+}
+
+export interface Activity {
+  id: string;
+  event_id: string;
+  name: string;
+  created_by: string;
+  created_at: string;
+  vote_count: number;
+  voted_by_me: boolean;
 }
 
 export interface TimeSlot {
@@ -120,14 +131,15 @@ export function useCreateEvent() {
       groupId,
       name,
       slots: slotInputs,
+      activities,
     }: {
       groupId: string;
       name: string;
       slots: SlotInput[];
+      activities?: string[];
     }) => {
       if (!user?.id) throw new Error("Not authenticated");
 
-      // Create event
       const { data: event, error } = await supabase
         .from("events")
         .insert({ group_id: groupId, name, created_by: user.id })
@@ -136,7 +148,6 @@ export function useCreateEvent() {
 
       if (error) throw error;
 
-      // Build time slot rows from explicit inputs
       const slotRows = slotInputs.map((s) => {
         const [h, m] = s.time.split(":").map(Number);
         const d = new Date(s.date);
@@ -148,11 +159,18 @@ export function useCreateEvent() {
         };
       });
 
-      const { error: slotErr } = await supabase
-        .from("time_slots")
-        .insert(slotRows);
-
+      const { error: slotErr } = await supabase.from("time_slots").insert(slotRows);
       if (slotErr) throw slotErr;
+
+      if (activities?.length) {
+        const actRows = activities.map((name) => ({
+          event_id: event.id,
+          name,
+          created_by: user.id,
+        }));
+        const { error: actErr } = await supabase.from("activities").insert(actRows);
+        if (actErr) throw actErr;
+      }
 
       return event;
     },
@@ -220,6 +238,78 @@ export function useTimeSlots(eventId: string | undefined) {
   });
 }
 
+export function useActivities(eventId: string | undefined) {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ["activities", eventId, user?.id],
+    queryFn: async (): Promise<Activity[]> => {
+      if (!eventId) return [];
+
+      const { data: acts, error } = await supabase
+        .from("activities")
+        .select("*")
+        .eq("event_id", eventId)
+        .order("created_at", { ascending: true });
+
+      if (error) throw error;
+
+      const { data: votes, error: voteErr } = await supabase
+        .from("activity_votes")
+        .select("*")
+        .eq("event_id", eventId);
+
+      if (voteErr) throw voteErr;
+
+      return (acts || []).map((act: any) => {
+        const actVotes = (votes || []).filter((v: any) => v.activity_id === act.id);
+        return {
+          ...act,
+          vote_count: actVotes.length,
+          voted_by_me: user ? actVotes.some((v: any) => v.user_id === user.id) : false,
+        };
+      });
+    },
+    enabled: !!eventId,
+  });
+}
+
+export function useToggleActivityVote() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      eventId,
+      activityId,
+      currentlyVoted,
+    }: {
+      eventId: string;
+      activityId: string;
+      currentlyVoted: boolean;
+    }) => {
+      if (!user?.id) throw new Error("Not authenticated");
+
+      if (currentlyVoted) {
+        const { error } = await supabase
+          .from("activity_votes")
+          .delete()
+          .eq("activity_id", activityId)
+          .eq("user_id", user.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("activity_votes")
+          .insert({ event_id: eventId, activity_id: activityId, user_id: user.id });
+        if (error) throw error;
+      }
+    },
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["activities", vars.eventId] });
+    },
+  });
+}
+
 export function useFinalizeEvent() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -229,10 +319,12 @@ export function useFinalizeEvent() {
       eventId,
       slotId,
       finalizedDate,
+      finalizedActivity,
     }: {
       eventId: string;
       slotId: string;
       finalizedDate: string;
+      finalizedActivity?: string;
     }) => {
       if (!user?.id) throw new Error("Not authenticated");
 
@@ -242,6 +334,7 @@ export function useFinalizeEvent() {
           status: "finalized",
           finalized_slot_id: slotId,
           finalized_date: finalizedDate,
+          finalized_activity: finalizedActivity || null,
         })
         .eq("id", eventId);
 

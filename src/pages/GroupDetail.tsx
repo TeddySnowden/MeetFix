@@ -8,7 +8,7 @@ import { Header } from "@/components/Header";
 import { useAuth } from "@/hooks/useAuth";
 import { useGroups } from "@/hooks/useGroups";
 import { useGroupEventsWithSlots, EventWithSlotInfo } from "@/hooks/useEvents";
-import { AddEventSlotDialog } from "@/components/AddEventSlotDialog";
+import { AddEventDialog } from "@/components/AddEventDialog";
 
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -118,7 +118,7 @@ export default function GroupDetail() {
       )}
 
       {groupId && (
-        <AddEventSlotDialog
+        <AddEventDialog
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           groupId={groupId}
