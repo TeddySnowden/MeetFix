@@ -71,7 +71,7 @@ export default function GroupDetail() {
           variant="ghost"
           size="icon"
           className="rounded-full"
-          onClick={() => navigate("/")}
+          onClick={() => navigate(-1)}
         >
           <ArrowLeft className="w-5 h-5" />
         </Button>
