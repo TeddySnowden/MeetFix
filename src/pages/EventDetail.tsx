@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, Clock } from "lucide-react";
+import { ArrowLeft, Check, Clock, Trophy, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Layout } from "@/components/Layout";
 import { Header } from "@/components/Header";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
+import { FinalizeDialog } from "@/components/FinalizeDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useEventDetail, useTimeSlots, useToggleVote, TimeSlot } from "@/hooks/useEvents";
 import { toast } from "@/hooks/use-toast";
@@ -23,12 +25,17 @@ export default function EventDetail() {
   const { data: event, isLoading: eventLoading } = useEventDetail(eventId);
   const { data: slots, isLoading: slotsLoading } = useTimeSlots(eventId);
   const toggleVote = useToggleVote();
+  const [finalizeOpen, setFinalizeOpen] = useState(false);
+
+  const isFinalized = event?.status === "finalized";
+  const isOwner = user && event && user.id === event.created_by;
 
   const handleVote = (slot: TimeSlot) => {
     if (!user) {
       toast({ title: "Sign in required", description: "Sign in with Google to vote." });
       return;
     }
+    if (isFinalized) return;
     toggleVote.mutate({
       eventId: slot.event_id,
       timeSlotId: slot.id,
@@ -37,6 +44,9 @@ export default function EventDetail() {
   };
 
   const isLoading = eventLoading || slotsLoading;
+  const finalizedSlot = isFinalized && event?.finalized_date
+    ? formatSlot(event.finalized_date)
+    : null;
 
   return (
     <Layout>
@@ -56,12 +66,35 @@ export default function EventDetail() {
             {event?.name || "Event"}
           </h2>
           {event && (
-            <p className="text-xs text-muted-foreground capitalize">
-              Status: {event.status}
+            <p className={`text-xs capitalize ${isFinalized ? "text-primary font-medium" : "text-muted-foreground"}`}>
+              {isFinalized ? "✅ Finalized" : "🗳️ Voting"}
             </p>
           )}
         </div>
+        {isOwner && !isFinalized && slots && slots.length > 0 && (
+          <Button
+            size="sm"
+            className="gradient-primary"
+            onClick={() => setFinalizeOpen(true)}
+          >
+            <Trophy className="w-4 h-4 mr-1" />
+            Finalize
+          </Button>
+        )}
       </div>
+
+      {/* Finalized banner */}
+      {isFinalized && finalizedSlot && (
+        <div className="bg-primary/10 border-2 border-primary rounded-xl p-4 mb-6 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center flex-shrink-0">
+            <Calendar className="w-6 h-6 text-primary-foreground" />
+          </div>
+          <div>
+            <p className="font-bold text-foreground">{finalizedSlot.day}</p>
+            <p className="text-sm text-muted-foreground">{finalizedSlot.time}</p>
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex justify-center py-12">
@@ -76,23 +109,34 @@ export default function EventDetail() {
           {slots && slots.length > 0 ? (
             slots.map((slot) => {
               const { day, time } = formatSlot(slot.slot_at);
+              const isWinner = isFinalized && event?.finalized_slot_id === slot.id;
               return (
                 <button
                   key={slot.id}
                   onClick={() => handleVote(slot)}
-                  disabled={toggleVote.isPending}
-                  className={`w-full rounded-xl p-4 shadow-soft transition-all text-left flex items-center gap-4 active:scale-[0.98] ${
-                    slot.voted_by_me
+                  disabled={toggleVote.isPending || isFinalized}
+                  className={`w-full rounded-xl p-4 shadow-soft transition-all text-left flex items-center gap-4 ${
+                    isFinalized ? "opacity-70 cursor-default" : "active:scale-[0.98]"
+                  } ${
+                    isWinner
                       ? "bg-primary/10 border-2 border-primary"
-                      : "bg-card border-2 border-transparent hover:shadow-card"
+                      : slot.voted_by_me
+                        ? "bg-primary/10 border-2 border-primary"
+                        : "bg-card border-2 border-transparent hover:shadow-card"
                   }`}
                 >
                   <div
                     className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                      slot.voted_by_me ? "gradient-primary" : "bg-secondary"
+                      isWinner
+                        ? "gradient-primary"
+                        : slot.voted_by_me
+                          ? "gradient-primary"
+                          : "bg-secondary"
                     }`}
                   >
-                    {slot.voted_by_me ? (
+                    {isWinner ? (
+                      <Trophy className="w-6 h-6 text-primary-foreground" />
+                    ) : slot.voted_by_me ? (
                       <Check className="w-6 h-6 text-primary-foreground" />
                     ) : (
                       <Clock className="w-6 h-6 text-muted-foreground" />
@@ -117,7 +161,7 @@ export default function EventDetail() {
             </div>
           )}
 
-          {!user && (
+          {!user && !isFinalized && (
             <div className="bg-secondary/50 rounded-xl p-4 text-center space-y-3">
               <p className="text-sm text-muted-foreground">
                 Sign in to vote on time slots.
@@ -126,6 +170,15 @@ export default function EventDetail() {
             </div>
           )}
         </div>
+      )}
+
+      {eventId && slots && (
+        <FinalizeDialog
+          open={finalizeOpen}
+          onOpenChange={setFinalizeOpen}
+          eventId={eventId}
+          slots={slots}
+        />
       )}
     </Layout>
   );

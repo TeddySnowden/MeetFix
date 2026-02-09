@@ -9,6 +9,8 @@ export interface Event {
   status: string;
   created_by: string;
   created_at: string;
+  finalized_slot_id: string | null;
+  finalized_date: string | null;
 }
 
 export interface TimeSlot {
@@ -141,6 +143,40 @@ export function useTimeSlots(eventId: string | undefined) {
       });
     },
     enabled: !!eventId,
+  });
+}
+
+export function useFinalizeEvent() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      eventId,
+      slotId,
+      finalizedDate,
+    }: {
+      eventId: string;
+      slotId: string;
+      finalizedDate: string;
+    }) => {
+      if (!user?.id) throw new Error("Not authenticated");
+
+      const { error } = await supabase
+        .from("events")
+        .update({
+          status: "finalized",
+          finalized_slot_id: slotId,
+          finalized_date: finalizedDate,
+        })
+        .eq("id", eventId);
+
+      if (error) throw error;
+    },
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["event", vars.eventId] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+    },
   });
 }
 
