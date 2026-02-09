@@ -183,23 +183,21 @@ export function useJoinGroupById() {
     mutationFn: async (groupId: string) => {
       if (!user) throw new Error("Must be signed in");
 
-      // Check if already a member
-      const { data: existing } = await supabase
+      // Idempotent upsert – no-op if already a member
+      const { data, error } = await supabase
         .from("group_members")
-        .select("id")
-        .eq("group_id", groupId)
-        .eq("user_id", user.id)
-        .maybeSingle();
+        .upsert(
+          { group_id: groupId, user_id: user.id, role: "member" },
+          { onConflict: "group_id,user_id" }
+        )
+        .select("joined_at")
+        .single();
 
-      if (existing) return { alreadyMember: true };
+      if (error) throw error;
 
-      const { error: joinErr } = await supabase
-        .from("group_members")
-        .insert({ group_id: groupId, user_id: user.id, role: "member" });
-
-      if (joinErr) throw joinErr;
-
-      return { alreadyMember: false };
+      // If joined_at is very recent (< 3s), it's a new join
+      const isNew = data && (Date.now() - new Date(data.joined_at).getTime()) < 3000;
+      return { alreadyMember: !isNew };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["groups"] });
