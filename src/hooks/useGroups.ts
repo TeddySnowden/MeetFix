@@ -72,7 +72,8 @@ export function useCreateGroup() {
 
   return useMutation({
     mutationFn: async (name: string) => {
-      if (!user) throw new Error("Must be signed in");
+      console.log("useCreateGroup - user:", user);
+      if (!user || !user.id) { throw new Error("User not authenticated - no valid user.id"); }
 
       const invite_code = generateInviteCode();
 
