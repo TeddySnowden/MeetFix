@@ -175,36 +175,6 @@ export function useUpdateGroup() {
   });
 }
 
-export function useJoinGroupById() {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (groupId: string) => {
-      if (!user) throw new Error("Must be signed in");
-
-      // Idempotent upsert – no-op if already a member
-      const { data, error } = await supabase
-        .from("group_members")
-        .upsert(
-          { group_id: groupId, user_id: user.id, role: "member" },
-          { onConflict: "group_id,user_id" }
-        )
-        .select("joined_at")
-        .single();
-
-      if (error) throw error;
-
-      // If joined_at is very recent (< 3s), it's a new join
-      const isNew = data && (Date.now() - new Date(data.joined_at).getTime()) < 3000;
-      return { alreadyMember: !isNew };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["groups"] });
-    },
-  });
-}
-
 export function useGroupByInviteCode(inviteCode: string | undefined) {
   return useQuery({
     queryKey: ["group-invite", inviteCode],

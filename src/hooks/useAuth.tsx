@@ -7,7 +7,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signInWithGoogle: (redirectPath?: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -38,12 +38,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signInWithGoogle = async (redirectPath?: string) => {
-    const redirectUri = redirectPath
-      ? `${window.location.origin}${redirectPath}`
-      : window.location.origin;
+  const signInWithGoogle = async () => {
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: redirectUri,
+      redirect_uri: window.location.origin,
     });
 
     if (result.redirected) {

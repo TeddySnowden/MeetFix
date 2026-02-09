@@ -2,14 +2,14 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 
-export function GoogleSignInButton({ redirectPath }: { redirectPath?: string }) {
+export function GoogleSignInButton() {
   const { signInWithGoogle } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const handleSignIn = async () => {
     setLoading(true);
     try {
-      await signInWithGoogle(redirectPath);
+      await signInWithGoogle();
     } catch (error) {
       console.error("Sign in error:", error);
     } finally {
