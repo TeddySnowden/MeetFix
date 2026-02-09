@@ -18,10 +18,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Layout } from "@/components/Layout";
 import { Header } from "@/components/Header";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { useGroups, useDeleteGroup, useUpdateGroup } from "@/hooks/useGroups";
 import { useGroupEventsWithSlots, EventWithSlotInfo, useDeleteEvent } from "@/hooks/useEvents";
+import { useAutoJoinGroup } from "@/hooks/useAutoJoinGroup";
 import { AddEventDialog } from "@/components/AddEventDialog";
 
 function generateInviteCode(): string {
@@ -36,10 +38,13 @@ function generateInviteCode(): string {
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { data: groups } = useGroups();
   const { data: events, isLoading } = useGroupEventsWithSlots(groupId);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Auto-join group on mount if authenticated
+  useAutoJoinGroup(groupId);
   const [searchParams, setSearchParams] = useSearchParams();
   const [deleteGroupOpen, setDeleteGroupOpen] = useState(false);
   const [deleteEventId, setDeleteEventId] = useState<string | null>(null);
@@ -60,6 +65,23 @@ export default function GroupDetail() {
   }, [searchParams, setSearchParams]);
   const memberCount = group?.member_count ?? 0;
   const isOwner = user?.id === group?.created_by;
+
+  // Auth guard: show sign-in prompt for unauthenticated users
+  if (!authLoading && !user) {
+    return (
+      <Layout>
+        <Header />
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+          <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center shadow-soft mb-6">
+            <Users className="w-8 h-8 text-primary-foreground" />
+          </div>
+          <h2 className="text-2xl font-bold text-foreground mb-2">Sign in to continue</h2>
+          <p className="text-muted-foreground mb-6">Sign in to join this group and see its events.</p>
+          <GoogleSignInButton />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
