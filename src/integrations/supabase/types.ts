@@ -181,11 +181,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_group: { Args: { group_id_input: string }; Returns: boolean }
       can_view_event: { Args: { event_id_input: string }; Returns: boolean }
       can_view_group_members: {
         Args: { group_id_input: string }
         Returns: boolean
       }
+      get_event_group_id: { Args: { event_id_input: string }; Returns: string }
+      is_event_creator: { Args: { event_id_input: string }; Returns: boolean }
+      is_group_owner: { Args: { group_id_input: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
