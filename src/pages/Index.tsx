@@ -188,7 +188,10 @@ const Index = () => {
               <CheckSquare className="w-6 h-6 text-white/60" />
               <span className="text-sm font-semibold text-white/60">Checklist</span>
             </button>
-            <button className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col items-center gap-3 hover:scale-[1.02] transition-all">
+            <button
+              className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col items-center gap-3 hover:scale-[1.02] transition-all"
+              onClick={() => navigate("/get-ready")}
+            >
               <Sparkles className="w-6 h-6 text-white/60" />
               <span className="text-sm font-semibold text-white/60">Get ready</span>
             </button>
