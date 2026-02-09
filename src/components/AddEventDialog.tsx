@@ -59,6 +59,7 @@ const defaultSlot = (): SlotState => ({ date: undefined, time: "18:00", duration
 
 export function AddEventDialog({ open, onOpenChange, groupId }: AddEventDialogProps) {
   const [step, setStep] = useState(0); // 0 = dates, 1 = activities
+  const [eventName, setEventName] = useState("Plans");
   const [slots, setSlots] = useState<SlotState[]>([defaultSlot()]);
   const [activities, setActivities] = useState<string[]>([""]);
   const createEvent = useCreateEvent();
@@ -88,7 +89,7 @@ export function AddEventDialog({ open, onOpenChange, groupId }: AddEventDialogPr
     setActivities((prev) => prev.map((a, i) => (i === idx ? value : a)));
   };
 
-  const allSlotsValid = slots.length >= 1 && slots.every((s) => s.date && s.time && s.duration);
+  const allSlotsValid = eventName.trim().length > 0 && slots.length >= 1 && slots.every((s) => s.date && s.time && s.duration);
   const allActivitiesValid = activities.length >= 1 && activities.every((a) => a.trim().length > 0);
 
   const handleCreate = async () => {
@@ -107,7 +108,7 @@ export function AddEventDialog({ open, onOpenChange, groupId }: AddEventDialogPr
     try {
       const event = await createEvent.mutateAsync({
         groupId,
-        name: "Group Event",
+        name: eventName.trim(),
         slots: slotInputs,
         activities: activityNames,
       });
@@ -121,6 +122,7 @@ export function AddEventDialog({ open, onOpenChange, groupId }: AddEventDialogPr
 
   const resetAndClose = () => {
     setStep(0);
+    setEventName("Plans");
     setSlots([defaultSlot()]);
     setActivities([""]);
     onOpenChange(false);
@@ -160,6 +162,16 @@ export function AddEventDialog({ open, onOpenChange, groupId }: AddEventDialogPr
 
         {step === 0 && (
           <div className="space-y-3">
+            <div>
+              <Label className="text-sm font-bold">Event Name</Label>
+              <Input
+                placeholder="e.g. BBQ Party, Team Dinner, Hiking Plans"
+                value={eventName}
+                onChange={(e) => setEventName(e.target.value)}
+                className="mt-1.5"
+                required
+              />
+            </div>
             {slots.length === 0 && (
               <p className="text-sm text-muted-foreground text-center py-4">Add date slots for voting (1–3 required)</p>
             )}
