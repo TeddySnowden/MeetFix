@@ -6,6 +6,7 @@ import { Layout } from "@/components/Layout";
 import { Header } from "@/components/Header";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { FinalizeDialog } from "@/components/FinalizeDialog";
+import { BringItemsList } from "@/components/BringItemsList";
 import { useAuth } from "@/hooks/useAuth";
 import { useEventDetail, useTimeSlots, useToggleVote, TimeSlot } from "@/hooks/useEvents";
 import { toast } from "@/hooks/use-toast";
@@ -169,6 +170,13 @@ export default function EventDetail() {
               <GoogleSignInButton />
             </div>
           )}
+        </div>
+      )}
+
+      {/* Bring Items - shown after finalization */}
+      {isFinalized && eventId && (
+        <div className="mt-6">
+          <BringItemsList eventId={eventId} isOwner={!!isOwner} />
         </div>
       )}
 
