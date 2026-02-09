@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Plus, Calendar, Users, Vote } from "lucide-react";
+import { ArrowLeft, Plus, Calendar, Users, Vote, UserPlus } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/Layout";
 import { Header } from "@/components/Header";
 import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/hooks/use-toast";
 import { useGroups } from "@/hooks/useGroups";
 import { useGroupEventsWithSlots, EventWithSlotInfo } from "@/hooks/useEvents";
 import { AddEventDialog } from "@/components/AddEventDialog";
@@ -78,26 +80,51 @@ export default function GroupDetail() {
             const voteLabel = `${ev.total_votes}/${memberCount} votes`;
 
             return (
-              <button
+              <div
                 key={ev.id}
-                onClick={() => navigate(`/e/${ev.id}`)}
-                className="w-full bg-card rounded-xl p-4 shadow-soft hover:shadow-card transition-all text-left flex items-center gap-4 active:scale-[0.98]"
+                className="relative w-full bg-card rounded-xl p-4 shadow-soft hover:shadow-card transition-all"
               >
-                <div className="w-12 h-12 rounded-xl gradient-coral flex items-center justify-center flex-shrink-0">
-                  <Calendar className="w-6 h-6 text-accent-foreground" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-foreground truncate">
-                    {ev.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground truncate flex items-center gap-1.5">
-                    <span>{slotLabel}</span>
-                    <span className="text-border">·</span>
-                    <Vote className="w-3 h-3 inline" />
-                    <span>{voteLabel}</span>
-                  </p>
-                </div>
-              </button>
+                <button
+                  onClick={() => navigate(`/e/${ev.id}`)}
+                  className="w-full text-left flex items-center gap-4 active:scale-[0.98] transition-transform"
+                >
+                  <div className="w-12 h-12 rounded-xl gradient-coral flex items-center justify-center flex-shrink-0">
+                    <Calendar className="w-6 h-6 text-accent-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-foreground truncate">
+                      {ev.name}
+                    </h3>
+                    <p className="text-sm text-muted-foreground truncate flex items-center gap-1.5">
+                      <span>{slotLabel}</span>
+                      <span className="text-border">·</span>
+                      <Vote className="w-3 h-3 inline" />
+                      <span>{voteLabel}</span>
+                    </p>
+                  </div>
+                </button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="absolute bottom-2 right-2 text-xs text-muted-foreground"
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          const link = `${window.location.origin}/join/${group?.invite_code}`;
+                          await navigator.clipboard.writeText(link);
+                          toast({ title: "Copied!", description: link });
+                        }}
+                      >
+                        <UserPlus className="w-3.5 h-3.5 mr-1" />
+                        Invite
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Invite friends to vote/join this group</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
             );
           })}
         </div>
