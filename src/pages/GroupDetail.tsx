@@ -104,7 +104,7 @@ export default function GroupDetail() {
           </div>
           <h2 className="text-2xl font-bold text-foreground mb-2">Sign in to join</h2>
           <p className="text-muted-foreground mb-6">Sign in with Google to join this group and see its events.</p>
-          <GoogleSignInButton />
+          <GoogleSignInButton redirectPath={`/g/${groupId}`} />
         </div>
       </Layout>
     );
