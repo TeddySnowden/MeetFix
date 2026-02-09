@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Plus, Calendar, Users, Vote } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -17,8 +17,17 @@ export default function GroupDetail() {
   const { data: groups } = useGroups();
   const { data: events, isLoading } = useGroupEventsWithSlots(groupId);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const group = groups?.find((g) => g.id === groupId);
+
+  // Auto-open wizard after group creation
+  useEffect(() => {
+    if (searchParams.get("onboarding") === "1") {
+      setDialogOpen(true);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
   const memberCount = group?.member_count ?? 0;
 
   return (

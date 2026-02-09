@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Plus, Copy, Check, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,10 +23,11 @@ interface CreateGroupDialogProps {
 
 export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps) {
   const [name, setName] = useState("");
-  const [createdGroup, setCreatedGroup] = useState<{ invite_code: string } | null>(null);
+  const [createdGroup, setCreatedGroup] = useState<{ id: string; invite_code: string } | null>(null);
   const [copied, setCopied] = useState(false);
   const createGroup = useCreateGroup();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const inviteLink = createdGroup
     ? `${window.location.origin}/join/${createdGroup.invite_code}`
@@ -139,7 +141,11 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
               </Button>
             </div>
             <DialogFooter>
-              <Button onClick={() => handleClose(false)} className="w-full gradient-primary">
+              <Button onClick={() => {
+                const gId = createdGroup?.id;
+                handleClose(false);
+                if (gId) navigate(`/g/${gId}?onboarding=1`);
+              }} className="w-full gradient-primary">
                 Done
               </Button>
             </DialogFooter>
