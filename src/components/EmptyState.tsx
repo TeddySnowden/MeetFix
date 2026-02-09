@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Users, Calendar, ListChecks, Vote, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GoogleSignInButton } from "./GoogleSignInButton";
@@ -34,6 +35,7 @@ export function EmptyState() {
   const { user } = useAuth();
   const { data: groups, isLoading } = useGroups();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const navigate = useNavigate();
 
   const hasGroups = groups && groups.length > 0;
 
@@ -60,7 +62,7 @@ export function EmptyState() {
             <GroupCard
               key={group.id}
               group={group}
-              onClick={() => {/* placeholder: navigate to group detail */}}
+              onClick={() => navigate(`/g/${group.id}`)}
             />
           ))}
         </div>
