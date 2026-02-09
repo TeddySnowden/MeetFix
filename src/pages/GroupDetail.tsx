@@ -1,13 +1,18 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Plus, Calendar, Users, Vote, UserPlus, Trash2, MoreVertical } from "lucide-react";
+import { ArrowLeft, Plus, Calendar, Users, Vote, UserPlus, Trash2, MoreVertical, ChevronDown, RefreshCw, Settings } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -15,9 +20,18 @@ import { Layout } from "@/components/Layout";
 import { Header } from "@/components/Header";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
-import { useGroups, useDeleteGroup } from "@/hooks/useGroups";
+import { useGroups, useDeleteGroup, useUpdateGroup } from "@/hooks/useGroups";
 import { useGroupEventsWithSlots, EventWithSlotInfo, useDeleteEvent } from "@/hooks/useEvents";
 import { AddEventDialog } from "@/components/AddEventDialog";
+
+function generateInviteCode(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
 
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -29,8 +43,11 @@ export default function GroupDetail() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [deleteGroupOpen, setDeleteGroupOpen] = useState(false);
   const [deleteEventId, setDeleteEventId] = useState<string | null>(null);
+  const [maxMembersOpen, setMaxMembersOpen] = useState(false);
+  const [maxMembersValue, setMaxMembersValue] = useState("");
   const deleteGroup = useDeleteGroup();
   const deleteEvent = useDeleteEvent();
+  const updateGroup = useUpdateGroup();
 
   const group = groups?.find((g) => g.id === groupId);
 
@@ -87,23 +104,61 @@ export default function GroupDetail() {
         <div className="flex items-center justify-between p-3 bg-muted rounded-lg mb-6">
           <div className="flex items-center gap-2">
             <Badge variant="secondary">
-              {memberCount} {memberCount === 1 ? "member" : "members"}
+              {memberCount}/{group.max_members ?? 999}
             </Badge>
           </div>
           <div className="flex items-center gap-1">
             <span className="text-xs font-mono text-muted-foreground">/join/{group.invite_code}</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={async () => {
-                const link = `${window.location.origin}/join/${group.invite_code}`;
-                await navigator.clipboard.writeText(link);
-                toast({ title: "Copied!", description: link });
-              }}
-            >
-              <UserPlus className="w-3.5 h-3.5 mr-1" />
-              Copy
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <UserPlus className="w-3.5 h-3.5 mr-1" />
+                  Copy
+                  <ChevronDown className="w-3 h-3 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={async () => {
+                    const link = `${window.location.origin}/join/${group.invite_code}`;
+                    await navigator.clipboard.writeText(link);
+                    toast({ title: "Copied!", description: link });
+                  }}
+                >
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Copy Link
+                </DropdownMenuItem>
+                {isOwner && (
+                  <>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setMaxMembersValue(String(group.max_members ?? 999));
+                        setMaxMembersOpen(true);
+                      }}
+                    >
+                      <Settings className="w-4 h-4 mr-2" />
+                      Set Max Members…
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        if (!groupId) return;
+                        const newCode = generateInviteCode();
+                        updateGroup.mutate(
+                          { groupId, updates: { invite_code: newCode } },
+                          {
+                            onSuccess: () => toast({ title: "New invite code generated", description: `/join/${newCode}` }),
+                            onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+                          }
+                        );
+                      }}
+                    >
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Generate New Code
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       )}
@@ -270,6 +325,50 @@ export default function GroupDetail() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Max Members Dialog */}
+      <Dialog open={maxMembersOpen} onOpenChange={setMaxMembersOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Set Max Members</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Label htmlFor="maxMembers">Maximum members (1–999)</Label>
+            <Input
+              id="maxMembers"
+              type="number"
+              min={1}
+              max={999}
+              value={maxMembersValue}
+              onChange={(e) => setMaxMembersValue(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setMaxMembersOpen(false)}>Cancel</Button>
+            <Button
+              onClick={() => {
+                const val = parseInt(maxMembersValue, 10);
+                if (!groupId || isNaN(val) || val < 1 || val > 999) {
+                  toast({ title: "Enter a number between 1 and 999", variant: "destructive" });
+                  return;
+                }
+                updateGroup.mutate(
+                  { groupId, updates: { max_members: val } },
+                  {
+                    onSuccess: () => {
+                      toast({ title: "Max members updated" });
+                      setMaxMembersOpen(false);
+                    },
+                    onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+                  }
+                );
+              }}
+            >
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }

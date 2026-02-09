@@ -18,6 +18,7 @@ export interface Group {
   created_by: string;
   invite_code: string;
   created_at: string;
+  max_members: number;
   member_count?: number;
 }
 
@@ -148,6 +149,23 @@ export function useDeleteGroup() {
       const { error } = await supabase
         .from("groups")
         .delete()
+        .eq("id", groupId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+    },
+  });
+}
+
+export function useUpdateGroup() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ groupId, updates }: { groupId: string; updates: { max_members?: number; invite_code?: string } }) => {
+      const { error } = await supabase
+        .from("groups")
+        .update(updates)
         .eq("id", groupId);
       if (error) throw error;
     },

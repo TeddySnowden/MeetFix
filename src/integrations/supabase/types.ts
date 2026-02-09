@@ -212,6 +212,7 @@ export type Database = {
           created_by: string
           id: string
           invite_code: string
+          max_members: number
           name: string
         }
         Insert: {
@@ -219,6 +220,7 @@ export type Database = {
           created_by: string
           id?: string
           invite_code: string
+          max_members?: number
           name: string
         }
         Update: {
@@ -226,6 +228,7 @@ export type Database = {
           created_by?: string
           id?: string
           invite_code?: string
+          max_members?: number
           name?: string
         }
         Relationships: []
