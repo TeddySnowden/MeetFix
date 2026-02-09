@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import JoinGroup from "./pages/JoinGroup";
+import GroupDetail from "./pages/GroupDetail";
+import EventDetail from "./pages/EventDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +22,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/join/:inviteCode" element={<JoinGroup />} />
+            <Route path="/g/:groupId" element={<GroupDetail />} />
+            <Route path="/e/:eventId" element={<EventDetail />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
