@@ -11,7 +11,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { useCreateEvent, SlotInput } from "@/hooks/useEvents";
+import { useCreateEvent } from "@/hooks/useEvents";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -30,20 +30,8 @@ export function CreateEventDialog({ open, onOpenChange, groupId }: CreateEventDi
     e.preventDefault();
     if (!name.trim()) return;
 
-    // Generate 3 default slots (next 3 days at 18:00)
-    const defaultSlots: SlotInput[] = [];
-    for (let i = 1; i <= 3; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() + i);
-      defaultSlots.push({ date: d, time: "18:00", duration: "2h" });
-    }
-
     try {
-      const event = await createEvent.mutateAsync({
-        groupId,
-        name: name.trim(),
-        slots: defaultSlots,
-      });
+      const event = await createEvent.mutateAsync({ groupId, name: name.trim() });
       toast({ title: "Event created!", description: "3 default time slots added." });
       onOpenChange(false);
       setName("Meeting");
