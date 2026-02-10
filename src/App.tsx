@@ -24,6 +24,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/join/:inviteCode" element={<JoinGroup />} />
+            <Route path="/invite/:inviteCode" element={<JoinGroup />} />
             <Route path="/g/:groupId" element={<GroupDetail />} />
             <Route path="/e/:eventId" element={<EventDetail />} />
             <Route path="/groups" element={<Groups />} />
