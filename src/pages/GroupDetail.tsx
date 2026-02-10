@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Plus, Calendar, Users, Vote, UserPlus, Trash2, MoreVertical, ChevronDown, RefreshCw, Settings } from "lucide-react";
+import { ArrowLeft, Plus, Calendar, Users, Vote, UserPlus, Trash2, MoreVertical, ChevronDown, RefreshCw, Settings, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,11 +18,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Layout } from "@/components/Layout";
 import { Header } from "@/components/Header";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
-import { useGroups, useDeleteGroup, useUpdateGroup } from "@/hooks/useGroups";
+import { useGroups, useDeleteGroup, useUpdateGroup, useJoinGroup } from "@/hooks/useGroups";
 import { useGroupEventsWithSlots, EventWithSlotInfo, useDeleteEvent } from "@/hooks/useEvents";
 import { AddEventDialog } from "@/components/AddEventDialog";
+import { supabase } from "@/integrations/supabase/client";
 
 function generateInviteCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -36,7 +38,7 @@ function generateInviteCode(): string {
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { data: groups } = useGroups();
   const { data: events, isLoading } = useGroupEventsWithSlots(groupId);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -45,11 +47,50 @@ export default function GroupDetail() {
   const [deleteEventId, setDeleteEventId] = useState<string | null>(null);
   const [maxMembersOpen, setMaxMembersOpen] = useState(false);
   const [maxMembersValue, setMaxMembersValue] = useState("");
+  const [groupName, setGroupName] = useState<string | null>(null);
+  const [autoJoined, setAutoJoined] = useState(false);
   const deleteGroup = useDeleteGroup();
   const deleteEvent = useDeleteEvent();
   const updateGroup = useUpdateGroup();
+  const joinGroup = useJoinGroup();
 
   const group = groups?.find((g) => g.id === groupId);
+
+  // Fetch group name for unauthenticated users
+  useEffect(() => {
+    if (!user && groupId && !authLoading) {
+      supabase
+        .from("groups")
+        .select("name")
+        .eq("id", groupId)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) setGroupName(data.name);
+        });
+    }
+  }, [user, groupId, authLoading]);
+
+  // Auto-join group after sign-in
+  useEffect(() => {
+    if (user && groupId && !autoJoined && !joinGroup.isPending) {
+      const isMember = groups?.some((g) => g.id === groupId);
+      if (isMember) return;
+      setAutoJoined(true);
+      // Look up invite code for this group to join
+      supabase
+        .from("groups")
+        .select("invite_code")
+        .eq("id", groupId)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (!data) return;
+          joinGroup.mutate(data.invite_code, {
+            onSuccess: () => toast({ title: "Joined the group!" }),
+            onError: (err: any) => toast({ title: "Couldn't join", description: err.message, variant: "destructive" }),
+          });
+        });
+    }
+  }, [user, groupId, groups, autoJoined]);
 
   // Auto-open wizard after group creation
   useEffect(() => {
@@ -60,6 +101,36 @@ export default function GroupDetail() {
   }, [searchParams, setSearchParams]);
   const memberCount = group?.member_count ?? 0;
   const isOwner = user?.id === group?.created_by;
+
+  // Auth guard: show sign-in prompt for unauthenticated users
+  if (authLoading) {
+    return (
+      <Layout>
+        <div className="flex flex-col items-center justify-center min-h-[70vh]">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Layout>
+        <div className="flex flex-col items-center justify-center min-h-[70vh] text-center px-4">
+          <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center shadow-soft mb-6">
+            <Users className="w-8 h-8 text-primary-foreground" />
+          </div>
+          <h2 className="text-2xl font-bold text-foreground mb-2">
+            {groupName ? `Join "${groupName}"` : "Join this group"}
+          </h2>
+          <p className="text-muted-foreground mb-6">
+            Sign in with Google to join and start planning events together.
+          </p>
+          <GoogleSignInButton />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
