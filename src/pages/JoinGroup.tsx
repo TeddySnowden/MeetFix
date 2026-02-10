@@ -20,8 +20,8 @@ export default function JoinGroup() {
       setJoined(true);
       joinGroup.mutate(inviteCode!, {
         onSuccess: () => {
-          toast({ title: `Joined "${group.name}"!` });
-          navigate("/");
+          toast({ title: `Welcome to ${group.name}!` });
+          navigate(`/g/${group.id}`);
         },
         onError: (err: any) => {
           toast({ title: "Couldn't join group", description: err.message, variant: "destructive" });
