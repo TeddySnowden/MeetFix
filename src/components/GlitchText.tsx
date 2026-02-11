@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
-const GLITCH_CHARS = "░▒▓█▄▀■□▪▫";
+const GLITCH_CHARS = "&^%€#@!?;[</£$¥₩♧◇♡♤■○●~`\•°☆▪︎¤《》¡¿`";
 
 interface GlitchTextProps {
   text: string;
@@ -30,9 +30,7 @@ export function GlitchText({ text, className = "", intervalRange = [1, 10] }: Gl
         // Replace random chars with glitch characters
         const chars = orig.split("").map((ch) => {
           if (ch === " ") return ch;
-          return Math.random() < 0.4
-            ? GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)]
-            : ch;
+          return Math.random() < 0.7 ? GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)] : ch;
         });
         setDisplay(chars.join(""));
         step++;
