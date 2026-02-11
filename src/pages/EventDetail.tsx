@@ -8,7 +8,6 @@ import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { FinalizeDialog } from "@/components/FinalizeDialog";
 import { BringItemsList } from "@/components/BringItemsList";
 import { VoteDensityBar } from "@/components/VoteDensityBar";
-import { SwipeVoteCard } from "@/components/SwipeVoteCard";
 import { useAuth } from "@/hooks/useAuth";
 import {
   useEventDetail,
@@ -147,48 +146,41 @@ export default function EventDetail() {
                 const isWinner = isFinalized && event?.finalized_slot_id === slot.id;
                 return (
                   <div key={slot.id}>
-                    <SwipeVoteCard
-                      voted={slot.voted_by_me}
+                    <button
+                      onClick={() => handleVote(slot)}
                       disabled={toggleVote.isPending || isFinalized}
-                      onVoteYes={() => handleVote(slot)}
-                      onVoteNo={() => handleVote(slot)}
-                    >
-                      <button
-                        onClick={() => handleVote(slot)}
-                        disabled={toggleVote.isPending || isFinalized}
-                        className={`w-full rounded-xl p-4 shadow-soft transition-all text-left flex items-center gap-4 ${
-                          isFinalized ? "opacity-70 cursor-default" : "active:scale-[0.98]"
-                        } ${
-                          isWinner
+                      className={`w-full rounded-xl p-4 shadow-soft transition-all text-left flex items-center gap-4 ${
+                        isFinalized ? "opacity-70 cursor-default" : "active:scale-[0.98]"
+                      } ${
+                        isWinner
+                          ? "bg-primary/10 border-2 border-primary"
+                          : slot.voted_by_me
                             ? "bg-primary/10 border-2 border-primary"
-                            : slot.voted_by_me
-                              ? "bg-primary/10 border-2 border-primary"
-                              : "bg-card border-2 border-transparent hover:shadow-card"
-                        }`}
-                      >
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                          isWinner || slot.voted_by_me ? "gradient-primary" : "bg-secondary"
-                        }`}>
-                          {isWinner ? (
-                            <Trophy className="w-6 h-6 text-primary-foreground" />
-                          ) : slot.voted_by_me ? (
-                            <Check className="w-6 h-6 text-primary-foreground" />
-                          ) : (
-                            <Clock className="w-6 h-6 text-muted-foreground" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-foreground">{day}</h4>
-                          <p className="text-sm text-muted-foreground">{time}</p>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <span className="text-lg font-bold text-foreground">{slot.vote_count}</span>
-                          <p className="text-xs text-muted-foreground">
-                            {slot.vote_count === 1 ? "vote" : "votes"}
-                          </p>
-                        </div>
-                      </button>
-                    </SwipeVoteCard>
+                            : "bg-card border-2 border-transparent hover:shadow-card"
+                      }`}
+                    >
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                        isWinner || slot.voted_by_me ? "gradient-primary" : "bg-secondary"
+                      }`}>
+                        {isWinner ? (
+                          <Trophy className="w-6 h-6 text-primary-foreground" />
+                        ) : slot.voted_by_me ? (
+                          <Check className="w-6 h-6 text-primary-foreground" />
+                        ) : (
+                          <Clock className="w-6 h-6 text-muted-foreground" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-foreground">{day}</h4>
+                        <p className="text-sm text-muted-foreground">{time}</p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <span className="text-lg font-bold text-foreground">{slot.vote_count}</span>
+                        <p className="text-xs text-muted-foreground">
+                          {slot.vote_count === 1 ? "vote" : "votes"}
+                        </p>
+                      </div>
+                    </button>
                     <VoteDensityBar
                       voteCount={slot.vote_count}
                       totalVotes={totalSlotVotes}
@@ -214,47 +206,40 @@ export default function EventDetail() {
                 const isWinner = isFinalized && event?.finalized_activity === act.name;
                 return (
                   <div key={act.id}>
-                    <SwipeVoteCard
-                      voted={act.voted_by_me}
+                    <button
+                      onClick={() => handleActivityVote(act)}
                       disabled={toggleActivityVote.isPending || isFinalized}
-                      onVoteYes={() => handleActivityVote(act)}
-                      onVoteNo={() => handleActivityVote(act)}
-                    >
-                      <button
-                        onClick={() => handleActivityVote(act)}
-                        disabled={toggleActivityVote.isPending || isFinalized}
-                        className={`w-full rounded-xl p-4 shadow-soft transition-all text-left flex items-center gap-4 ${
-                          isFinalized ? "opacity-70 cursor-default" : "active:scale-[0.98]"
-                        } ${
-                          isWinner
+                      className={`w-full rounded-xl p-4 shadow-soft transition-all text-left flex items-center gap-4 ${
+                        isFinalized ? "opacity-70 cursor-default" : "active:scale-[0.98]"
+                      } ${
+                        isWinner
+                          ? "bg-primary/10 border-2 border-primary"
+                          : act.voted_by_me
                             ? "bg-primary/10 border-2 border-primary"
-                            : act.voted_by_me
-                              ? "bg-primary/10 border-2 border-primary"
-                              : "bg-card border-2 border-transparent hover:shadow-card"
-                        }`}
-                      >
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                          isWinner || act.voted_by_me ? "gradient-primary" : "bg-secondary"
-                        }`}>
-                          {isWinner ? (
-                            <Trophy className="w-6 h-6 text-primary-foreground" />
-                          ) : act.voted_by_me ? (
-                            <Check className="w-6 h-6 text-primary-foreground" />
-                          ) : (
-                            <Sparkles className="w-6 h-6 text-muted-foreground" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-foreground">{act.name}</h4>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <span className="text-lg font-bold text-foreground">{act.vote_count}</span>
-                          <p className="text-xs text-muted-foreground">
-                            {act.vote_count === 1 ? "vote" : "votes"}
-                          </p>
-                        </div>
-                      </button>
-                    </SwipeVoteCard>
+                            : "bg-card border-2 border-transparent hover:shadow-card"
+                      }`}
+                    >
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                        isWinner || act.voted_by_me ? "gradient-primary" : "bg-secondary"
+                      }`}>
+                        {isWinner ? (
+                          <Trophy className="w-6 h-6 text-primary-foreground" />
+                        ) : act.voted_by_me ? (
+                          <Check className="w-6 h-6 text-primary-foreground" />
+                        ) : (
+                          <Sparkles className="w-6 h-6 text-muted-foreground" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-foreground">{act.name}</h4>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <span className="text-lg font-bold text-foreground">{act.vote_count}</span>
+                        <p className="text-xs text-muted-foreground">
+                          {act.vote_count === 1 ? "vote" : "votes"}
+                        </p>
+                      </div>
+                    </button>
                     <VoteDensityBar
                       voteCount={act.vote_count}
                       totalVotes={totalActivityVotes}

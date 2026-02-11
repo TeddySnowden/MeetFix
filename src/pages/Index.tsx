@@ -39,7 +39,9 @@ const Index = () => {
 
   const upcomingGroups = groups || [];
   const firstName = user?.user_metadata?.full_name?.split(" ")[0] || "User";
-  const myClaimedItem = heroItems?.find((item) => item.claim && item.claim.user_id === user?.id);
+  const myClaimedItem = heroItems?.find(
+    (item) => item.claim && item.claim.user_id === user?.id
+  );
 
   return (
     <div className="min-h-screen bg-black pb-48">
@@ -80,7 +82,11 @@ const Index = () => {
             </div>
           )}
         </div>
-        {user && <p className="text-white/70 text-base mt-1">Hey, {firstName}! 👋</p>}
+        {user && (
+          <p className="text-white/70 text-base mt-1">
+            Hey, {firstName}! 👋
+          </p>
+        )}
       </div>
 
       {/* Hero Card - nearest event */}
@@ -98,17 +104,20 @@ const Index = () => {
             <div className="flex items-center gap-1.5 text-white/80">
               <Clock className="w-4 h-4" />
               <span className="text-sm">
-                {heroEvent.finalized_date ? format(new Date(heroEvent.finalized_date), "MMM d, HH:mm") : "Time not set"}
+                {heroEvent.finalized_date
+                  ? format(new Date(heroEvent.finalized_date), "MMM d, HH:mm")
+                  : "Time not set"}
               </span>
             </div>
             {heroEvent.status === "finalized" && (
-              <Badge className="bg-black/30 text-white border-none text-xs">Finalized</Badge>
+              <Badge className="bg-black/30 text-white border-none text-xs">
+                Finalized
+              </Badge>
             )}
           </div>
           {myClaimedItem && (
             <p className="text-white/90 text-sm mb-4">
-              You bring: {myClaimedItem.emoji ? `${myClaimedItem.emoji} ` : "📦 "}
-              {myClaimedItem.name}
+              You bring: {myClaimedItem.emoji ? `${myClaimedItem.emoji} ` : "📦 "}{myClaimedItem.name}
             </p>
           )}
           <button className="text-white/90 text-sm font-medium flex items-center gap-1 hover:text-white transition-colors">
@@ -142,7 +151,9 @@ const Index = () => {
           </div>
           <h4 className="text-xl font-bold text-white mb-1">{upcomingGroups[0].name}</h4>
           {upcomingGroups.length > 1 && (
-            <p className="text-white/50 text-sm mb-3">+{upcomingGroups.length - 1} more plans</p>
+            <p className="text-white/50 text-sm mb-3">
+              +{upcomingGroups.length - 1} more plans
+            </p>
           )}
           <button
             className="text-emerald-400 text-sm font-medium flex items-center gap-1 hover:text-emerald-300 transition-colors"
@@ -159,7 +170,9 @@ const Index = () => {
       {/* Quick Actions */}
       {user && (
         <div className="mx-6 mt-8">
-          <h3 className="text-xs font-bold tracking-widest uppercase text-white/50 mb-4 px-1">Quick Actions</h3>
+          <h3 className="text-xs font-bold tracking-widest uppercase text-white/50 mb-4 px-1">
+            Quick Actions
+          </h3>
           <div className="grid grid-cols-2 gap-3">
             <button
               className="bg-gradient-to-br from-emerald-500/20 to-teal-600/10 backdrop-blur-xl border border-emerald-500/30 rounded-2xl p-6 flex flex-col items-center gap-3 hover:scale-[1.02] transition-all"
@@ -197,7 +210,9 @@ const Index = () => {
       {!user && (
         <div className="mx-6 mt-8">
           <div className="bg-white/5 rounded-xl p-4 text-center border border-white/10">
-            <p className="text-sm text-white/50">Guest mode active. Sign in to create groups and participate.</p>
+            <p className="text-sm text-white/50">
+              Guest mode active. Sign in to create groups and participate.
+            </p>
           </div>
         </div>
       )}
