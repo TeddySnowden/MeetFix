@@ -7,7 +7,7 @@ import { Header } from "@/components/Header";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { FinalizeDialog } from "@/components/FinalizeDialog";
 import { BringItemsList } from "@/components/BringItemsList";
-import { getStepColor, getVoteRatio, getVotePct } from "@/components/VoteDensityBar";
+import { VoteDensityBar } from "@/components/VoteDensityBar";
 import { SwipeVoteCard } from "@/components/SwipeVoteCard";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -143,15 +143,11 @@ export default function EventDetail() {
             </h3>
             {slots && slots.length > 0 ? (
               slots.map((slot) => {
-                  const { day, time } = formatSlot(slot.slot_at);
-                  const isWinner = isFinalized && event?.finalized_slot_id === slot.id;
-                  const ratio = getVoteRatio(slot.vote_count, totalSlotVotes);
-                  const pct = getVotePct(slot.vote_count, totalSlotVotes);
-                  const fillColor = getStepColor(ratio);
-                  const isHighest = slot.vote_count === maxSlotVotes && maxSlotVotes > 0;
-                  return (
+                const { day, time } = formatSlot(slot.slot_at);
+                const isWinner = isFinalized && event?.finalized_slot_id === slot.id;
+                return (
+                  <div key={slot.id}>
                     <SwipeVoteCard
-                      key={slot.id}
                       voted={slot.voted_by_me}
                       disabled={toggleVote.isPending || isFinalized}
                       onVoteYes={() => handleVote(slot)}
@@ -160,18 +156,15 @@ export default function EventDetail() {
                       <button
                         onClick={() => handleVote(slot)}
                         disabled={toggleVote.isPending || isFinalized}
-                        className={`w-full rounded-xl p-4 shadow-soft transition-all text-left flex items-center gap-4 relative overflow-hidden ${
+                        className={`w-full rounded-xl p-4 shadow-soft transition-all text-left flex items-center gap-4 ${
                           isFinalized ? "opacity-70 cursor-default" : "active:scale-[0.98]"
                         } ${
                           isWinner
-                            ? "border-2 border-primary"
-                            : isHighest
-                              ? "border-2 gold-winner-border"
-                              : slot.voted_by_me
-                                ? "border-2 border-primary"
-                                : "border-2 border-transparent hover:shadow-card"
+                            ? "bg-primary/10 border-2 border-primary"
+                            : slot.voted_by_me
+                              ? "bg-primary/10 border-2 border-primary"
+                              : "bg-card border-2 border-transparent hover:shadow-card"
                         }`}
-                        style={{ background: `linear-gradient(90deg, ${fillColor}33 0%, ${fillColor}33 ${pct}%, hsl(var(--card)) ${pct}%)` }}
                       >
                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
                           isWinner || slot.voted_by_me ? "gradient-primary" : "bg-secondary"
@@ -189,15 +182,21 @@ export default function EventDetail() {
                           <p className="text-sm text-muted-foreground">{time}</p>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <span className="text-lg font-bold text-foreground">{pct}%</span>
+                          <span className="text-lg font-bold text-foreground">{slot.vote_count}</span>
                           <p className="text-xs text-muted-foreground">
-                            {slot.vote_count} {slot.vote_count === 1 ? "vote" : "votes"}
+                            {slot.vote_count === 1 ? "vote" : "votes"}
                           </p>
                         </div>
                       </button>
                     </SwipeVoteCard>
-                  );
-                })
+                    <VoteDensityBar
+                      voteCount={slot.vote_count}
+                      totalVotes={totalSlotVotes}
+                      isHighest={slot.vote_count === maxSlotVotes && maxSlotVotes > 0}
+                    />
+                  </div>
+                );
+              })
             ) : (
               <div className="bg-card rounded-2xl shadow-card p-6 text-center">
                 <p className="text-muted-foreground">No time slots yet.</p>
@@ -213,13 +212,9 @@ export default function EventDetail() {
               </h3>
               {activities.map((act) => {
                 const isWinner = isFinalized && event?.finalized_activity === act.name;
-                  const ratio = getVoteRatio(act.vote_count, totalActivityVotes);
-                  const pct = getVotePct(act.vote_count, totalActivityVotes);
-                  const fillColor = getStepColor(ratio);
-                  const isHighest = act.vote_count === maxActivityVotes && maxActivityVotes > 0;
-                  return (
+                return (
+                  <div key={act.id}>
                     <SwipeVoteCard
-                      key={act.id}
                       voted={act.voted_by_me}
                       disabled={toggleActivityVote.isPending || isFinalized}
                       onVoteYes={() => handleActivityVote(act)}
@@ -228,18 +223,15 @@ export default function EventDetail() {
                       <button
                         onClick={() => handleActivityVote(act)}
                         disabled={toggleActivityVote.isPending || isFinalized}
-                        className={`w-full rounded-xl p-4 shadow-soft transition-all text-left flex items-center gap-4 relative overflow-hidden ${
+                        className={`w-full rounded-xl p-4 shadow-soft transition-all text-left flex items-center gap-4 ${
                           isFinalized ? "opacity-70 cursor-default" : "active:scale-[0.98]"
                         } ${
                           isWinner
-                            ? "border-2 border-primary"
-                            : isHighest
-                              ? "border-2 gold-winner-border"
-                              : act.voted_by_me
-                                ? "border-2 border-primary"
-                                : "border-2 border-transparent hover:shadow-card"
+                            ? "bg-primary/10 border-2 border-primary"
+                            : act.voted_by_me
+                              ? "bg-primary/10 border-2 border-primary"
+                              : "bg-card border-2 border-transparent hover:shadow-card"
                         }`}
-                        style={{ background: `linear-gradient(90deg, ${fillColor}33 0%, ${fillColor}33 ${pct}%, hsl(var(--card)) ${pct}%)` }}
                       >
                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
                           isWinner || act.voted_by_me ? "gradient-primary" : "bg-secondary"
@@ -256,15 +248,21 @@ export default function EventDetail() {
                           <h4 className="font-semibold text-foreground">{act.name}</h4>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <span className="text-lg font-bold text-foreground">{pct}%</span>
+                          <span className="text-lg font-bold text-foreground">{act.vote_count}</span>
                           <p className="text-xs text-muted-foreground">
-                            {act.vote_count} {act.vote_count === 1 ? "vote" : "votes"}
+                            {act.vote_count === 1 ? "vote" : "votes"}
                           </p>
                         </div>
                       </button>
                     </SwipeVoteCard>
-                  );
-                })}
+                    <VoteDensityBar
+                      voteCount={act.vote_count}
+                      totalVotes={totalActivityVotes}
+                      isHighest={act.vote_count === maxActivityVotes && maxActivityVotes > 0}
+                    />
+                  </div>
+                );
+              })}
             </div>
           )}
 
