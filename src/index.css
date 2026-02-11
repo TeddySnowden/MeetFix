@@ -169,4 +169,19 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  /* Gold winner border animation */
+  .gold-winner-border {
+    box-shadow: 0 0 8px 2px #FFD700, 0 0 16px 4px #FFA50066;
+    animation: gold-pulse 1.5s ease-in-out infinite;
+  }
+}
+
+@keyframes gold-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px 2px #FFD700, 0 0 16px 4px #FFA50066;
+  }
+  50% {
+    box-shadow: 0 0 14px 4px #FFA500, 0 0 24px 8px #FFD70066;
+  }
 }
