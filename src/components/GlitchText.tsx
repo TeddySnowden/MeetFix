@@ -34,7 +34,7 @@ export function GlitchText({ text, className = "", intervalRange = [1, 3] }: Gli
         });
         setDisplay(chars.join(""));
         step++;
-        timeoutRef.current = setTimeout(tick, 500);
+        timeoutRef.current = setTimeout(tick, 5000);
       } else {
         setDisplay(orig);
         setIsGlitching(false);
