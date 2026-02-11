@@ -22,7 +22,7 @@ export function GlitchText({ text, className = "", intervalRange = [1, 3] }: Gli
   const glitchBurst = useCallback(() => {
     setIsGlitching(true);
     const orig = originalRef.current;
-    const steps = 2;
+    const steps = 1;
     let step = 0;
 
     const tick = () => {
@@ -30,7 +30,7 @@ export function GlitchText({ text, className = "", intervalRange = [1, 3] }: Gli
         // Replace random chars with glitch characters
         const chars = orig.split("").map((ch) => {
           if (ch === " ") return ch;
-          return Math.random() < 0.1 ? GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)] : ch;
+          return Math.random() < 0.01 ? GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)] : ch;
         });
         setDisplay(chars.join(""));
         step++;
@@ -46,7 +46,7 @@ export function GlitchText({ text, className = "", intervalRange = [1, 3] }: Gli
   useEffect(() => {
     const scheduleNext = () => {
       const [min, max] = intervalRange;
-      const delay = (min + Math.random() * (max - min)) * 1000;
+      const delay = (min + Math.random() * (max - min)) * 100;
       timeoutRef.current = setTimeout(() => {
         glitchBurst();
         scheduleNext();
