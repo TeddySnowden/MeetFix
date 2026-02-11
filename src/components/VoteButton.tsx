@@ -122,10 +122,9 @@ export function VoteButton({
 
   const sweepPct = sweepProgress !== null ? Math.round(sweepProgress * 100) : null;
 
-  // Density background for voted state (no sweep active)
-  const densityRatio = memberCount > 0 ? Math.min(voteCount / memberCount, 1) : 0;
-  const densityPct = Math.round(densityRatio * 100);
-  const densityColor = getStepColor(densityRatio);
+  // Density background for voted state — matches VoteDensityBar ratio exactly
+  const densityPct = Math.round(voteRatio * 100);
+  const densityColor = getStepColor(voteRatio);
   const showDensityBg = voted && sweepProgress === null;
 
   return (
