@@ -8,6 +8,7 @@ import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { FinalizeDialog } from "@/components/FinalizeDialog";
 import { BringItemsList } from "@/components/BringItemsList";
 import { VoteDensityBar } from "@/components/VoteDensityBar";
+import { VoteButton } from "@/components/VoteButton";
 import { useAuth } from "@/hooks/useAuth";
 import {
   useEventDetail,
@@ -146,10 +147,14 @@ export default function EventDetail() {
                 const isWinner = isFinalized && event?.finalized_slot_id === slot.id;
                 return (
                   <div key={slot.id}>
-                    <button
-                      onClick={() => handleVote(slot)}
+                    <VoteButton
+                      voted={slot.voted_by_me}
                       disabled={toggleVote.isPending || isFinalized}
-                      className={`w-full rounded-xl p-4 shadow-soft transition-all text-left flex items-center gap-4 ${
+                      isWinner={isWinner}
+                      voteRatio={totalSlotVotes > 0 ? slot.vote_count / totalSlotVotes : 0}
+                      onVoteYes={() => handleVote(slot)}
+                      onVoteNo={() => handleVote(slot)}
+                      className={`w-full rounded-xl p-4 shadow-soft transition-all text-left ${
                         isFinalized ? "opacity-70 cursor-default" : "active:scale-[0.98]"
                       } ${
                         isWinner
@@ -180,7 +185,7 @@ export default function EventDetail() {
                           {slot.vote_count === 1 ? "vote" : "votes"}
                         </p>
                       </div>
-                    </button>
+                    </VoteButton>
                     <VoteDensityBar
                       voteCount={slot.vote_count}
                       totalVotes={totalSlotVotes}
@@ -206,10 +211,14 @@ export default function EventDetail() {
                 const isWinner = isFinalized && event?.finalized_activity === act.name;
                 return (
                   <div key={act.id}>
-                    <button
-                      onClick={() => handleActivityVote(act)}
+                    <VoteButton
+                      voted={act.voted_by_me}
                       disabled={toggleActivityVote.isPending || isFinalized}
-                      className={`w-full rounded-xl p-4 shadow-soft transition-all text-left flex items-center gap-4 ${
+                      isWinner={isWinner}
+                      voteRatio={totalActivityVotes > 0 ? act.vote_count / totalActivityVotes : 0}
+                      onVoteYes={() => handleActivityVote(act)}
+                      onVoteNo={() => handleActivityVote(act)}
+                      className={`w-full rounded-xl p-4 shadow-soft transition-all text-left ${
                         isFinalized ? "opacity-70 cursor-default" : "active:scale-[0.98]"
                       } ${
                         isWinner
@@ -239,7 +248,7 @@ export default function EventDetail() {
                           {act.vote_count === 1 ? "vote" : "votes"}
                         </p>
                       </div>
-                    </button>
+                    </VoteButton>
                     <VoteDensityBar
                       voteCount={act.vote_count}
                       totalVotes={totalActivityVotes}
