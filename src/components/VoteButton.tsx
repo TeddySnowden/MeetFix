@@ -135,7 +135,7 @@ export function VoteButton({
           style={{
             width: `${sweepPct}%`,
             backgroundColor: sweepColor || "transparent",
-            opacity: 0.35,
+            opacity: 1,
           }}
         />
       )}
