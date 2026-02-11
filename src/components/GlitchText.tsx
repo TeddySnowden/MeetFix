@@ -22,7 +22,7 @@ export function GlitchText({ text, className = "", intervalRange = [1, 10] }: Gl
   const glitchBurst = useCallback(() => {
     setIsGlitching(true);
     const orig = originalRef.current;
-    const steps = 1;
+    const steps = 2;
     let step = 0;
 
     const tick = () => {
