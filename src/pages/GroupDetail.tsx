@@ -1,20 +1,39 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Plus, Calendar, Users, Vote, UserPlus, Trash2, MoreVertical, ChevronDown, RefreshCw, Settings } from "lucide-react";
+import {
+  ArrowLeft,
+  Plus,
+  Calendar,
+  Users,
+  Vote,
+  UserPlus,
+  Trash2,
+  MoreVertical,
+  ChevronDown,
+  RefreshCw,
+  Settings,
+} from "lucide-react";
 import { format, differenceInCalendarDays } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Layout } from "@/components/Layout";
 import { Header } from "@/components/Header";
@@ -67,23 +86,15 @@ export default function GroupDetail() {
 
       {/* Back + group name */}
       <div className="flex items-center gap-3 mb-6">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="rounded-full"
-          onClick={() => navigate(-1)}
-        >
+        <Button variant="ghost" size="icon" className="rounded-full" onClick={() => navigate(-1)}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div className="flex-1 min-w-0">
-          <h2 className="text-lg font-bold text-foreground truncate">
-            {group?.name || "Group"}
-          </h2>
+          <h2 className="text-lg font-bold text-foreground truncate">{group?.name || "Group"}</h2>
           {group?.member_count != null && (
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <Users className="w-3 h-3" />
-              {group.member_count}{" "}
-              {group.member_count === 1 ? "member" : "members"}
+              {group.member_count} {group.member_count === 1 ? "member" : "members"}
             </p>
           )}
         </div>
@@ -146,9 +157,11 @@ export default function GroupDetail() {
                         updateGroup.mutate(
                           { groupId, updates: { invite_code: newCode } },
                           {
-                            onSuccess: () => toast({ title: "New invite code generated", description: `/join/${newCode}` }),
-                            onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
-                          }
+                            onSuccess: () =>
+                              toast({ title: "New invite code generated", description: `/join/${newCode}` }),
+                            onError: (err) =>
+                              toast({ title: "Error", description: err.message, variant: "destructive" }),
+                          },
                         );
                       }}
                     >
@@ -170,16 +183,14 @@ export default function GroupDetail() {
         </div>
       ) : events && events.length > 0 ? (
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider px-1">
-            Events
-          </h3>
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider px-1">Events</h3>
           {(() => {
             const now = Date.now();
             // Calculate density for each event based on days until event
             const eventsWithDensity = events.map((ev: EventWithSlotInfo) => {
               const eventDate = ev.first_slot_at ? new Date(ev.first_slot_at).getTime() : null;
               const daysToEvent = eventDate ? Math.max(0, Math.floor((eventDate - now) / 86400000)) : 999;
-              const stepIndex = Math.max(0, Math.min(10, 11 - daysToEvent));
+              const stepIndex = Math.max(0, Math.min(10, 10 - daysToEvent));
               const densityRatio = stepIndex / 10;
               return { ev, densityRatio };
             });
@@ -202,9 +213,10 @@ export default function GroupDetail() {
                   key={ev.id}
                   className={`relative w-full rounded-xl p-4 shadow-soft hover:shadow-card transition-all ${isClosest ? "cyberpunk-glitch" : ""}`}
                   style={{
-                    background: densityRatio > 0
-                      ? `linear-gradient(to right, ${color} 0%, ${color} ${pct}%, #1f2937 ${pct}%)`
-                      : undefined,
+                    background:
+                      densityRatio > 0
+                        ? `linear-gradient(to right, ${color} 0%, ${color} ${pct}%, #1f2937 ${pct}%)`
+                        : undefined,
                   }}
                 >
                   <button
@@ -215,9 +227,7 @@ export default function GroupDetail() {
                       <Calendar className="w-6 h-6 text-accent-foreground" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-white truncate">
-                        {ev.name}
-                      </h3>
+                      <h3 className="font-semibold text-white truncate">{ev.name}</h3>
                       <p className="text-sm text-white/70 truncate flex items-center gap-1.5">
                         <span>{slotLabel}</span>
                         <span className="text-white/30">·</span>
@@ -259,12 +269,8 @@ export default function GroupDetail() {
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl gradient-coral flex items-center justify-center shadow-soft">
             <Calendar className="w-8 h-8 text-accent-foreground" />
           </div>
-          <h3 className="text-lg font-bold text-foreground mb-2">
-            No events yet
-          </h3>
-          <p className="text-muted-foreground text-sm mb-4">
-            Tap the + button to create your first event.
-          </p>
+          <h3 className="text-lg font-bold text-foreground mb-2">No events yet</h3>
+          <p className="text-muted-foreground text-sm mb-4">Tap the + button to create your first event.</p>
         </div>
       )}
 
@@ -279,13 +285,7 @@ export default function GroupDetail() {
         </button>
       )}
 
-      {groupId && (
-        <AddEventDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          groupId={groupId}
-        />
-      )}
+      {groupId && <AddEventDialog open={dialogOpen} onOpenChange={setDialogOpen} groupId={groupId} />}
 
       {/* Delete Group AlertDialog */}
       <AlertDialog open={deleteGroupOpen} onOpenChange={setDeleteGroupOpen}>
@@ -332,13 +332,16 @@ export default function GroupDetail() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => {
                 if (!deleteEventId || !groupId) return;
-                deleteEvent.mutate({ eventId: deleteEventId, groupId }, {
-                  onSuccess: () => {
-                    toast({ title: "Event deleted" });
-                    setDeleteEventId(null);
+                deleteEvent.mutate(
+                  { eventId: deleteEventId, groupId },
+                  {
+                    onSuccess: () => {
+                      toast({ title: "Event deleted" });
+                      setDeleteEventId(null);
+                    },
+                    onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
                   },
-                  onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
-                });
+                );
               }}
             >
               Delete
@@ -365,7 +368,9 @@ export default function GroupDetail() {
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setMaxMembersOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setMaxMembersOpen(false)}>
+              Cancel
+            </Button>
             <Button
               onClick={() => {
                 const val = parseInt(maxMembersValue, 10);
@@ -381,7 +386,7 @@ export default function GroupDetail() {
                       setMaxMembersOpen(false);
                     },
                     onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
-                  }
+                  },
                 );
               }}
             >
