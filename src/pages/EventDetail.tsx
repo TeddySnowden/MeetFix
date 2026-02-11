@@ -120,7 +120,10 @@ export default function EventDetail() {
           <Button
             size="sm"
             className="gradient-primary"
-            onClick={() => setFinalizeOpen(true)}
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(50); // Heavy haptic for finalize
+              setFinalizeOpen(true);
+            }}
           >
             <Trophy className="w-4 h-4 mr-1" />
             Finalize
