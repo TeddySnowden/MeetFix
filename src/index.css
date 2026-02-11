@@ -181,6 +181,30 @@
     animation: glitch 0.3s infinite linear;
     border: 2px solid #00ff41;
   }
+
+  /* JS glitch text effect */
+  .glitch-text-active {
+    text-shadow: 1px 0 #00ff41, -1px 0 #ff0041;
+  }
+
+  .glitch-scanline {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 2px,
+      rgba(0, 255, 65, 0.04) 2px,
+      rgba(0, 255, 65, 0.04) 4px
+    );
+    animation: scanline-scroll 0.2s linear;
+  }
+}
+
+@keyframes scanline-scroll {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
 }
 
 @keyframes gold-pulse {

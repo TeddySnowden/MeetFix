@@ -42,6 +42,7 @@ import { toast } from "@/hooks/use-toast";
 import { useGroups, useDeleteGroup, useUpdateGroup } from "@/hooks/useGroups";
 import { useGroupEventsWithSlots, EventWithSlotInfo, useDeleteEvent } from "@/hooks/useEvents";
 import { AddEventDialog } from "@/components/AddEventDialog";
+import { GlitchText } from "@/components/GlitchText";
 
 function generateInviteCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -227,7 +228,9 @@ export default function GroupDetail() {
                       <Calendar className="w-6 h-6 text-accent-foreground" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-white truncate">{ev.name}</h3>
+                      <h3 className="font-semibold text-white truncate">
+                        {isClosest ? <GlitchText text={ev.name} /> : ev.name}
+                      </h3>
                       <p className="text-sm text-white/70 truncate flex items-center gap-1.5">
                         <span>{slotLabel}</span>
                         <span className="text-white/30">·</span>
