@@ -1,9 +1,6 @@
 import { useRef, useState, useCallback, ReactNode } from "react";
 
-const STEP_COLORS = [
-  "#f00", "#f80", "#fa0", "#fd0", "#af0",
-  "#7f7", "#5f5", "#0f8", "#08f", "#f0f",
-];
+const STEP_COLORS = ["#f00", "#f80", "#fa0", "#fd0", "#af0", "#7f7", "#5f5", "#0f8", "#08f", "#f0f"];
 
 function getStepColor(ratio: number): string {
   const idx = Math.min(Math.floor(ratio * 10), 9);
@@ -21,7 +18,7 @@ interface VoteButtonProps {
   className?: string;
 }
 
-const LONG_PRESS_MS = 500;
+const LONG_PRESS_MS = 2000;
 const DOUBLE_TAP_MS = 2000;
 
 export function VoteButton({
@@ -117,12 +114,9 @@ export function VoteButton({
   }, [cancelSweep]);
 
   const sweepColor =
-    sweepProgress !== null
-      ? getStepColor(reverseSweep ? sweepProgress * voteRatio : sweepProgress)
-      : null;
+    sweepProgress !== null ? getStepColor(reverseSweep ? sweepProgress * voteRatio : sweepProgress) : null;
 
-  const sweepPct =
-    sweepProgress !== null ? Math.round(sweepProgress * 100) : null;
+  const sweepPct = sweepProgress !== null ? Math.round(sweepProgress * 100) : null;
 
   return (
     <button
@@ -145,9 +139,7 @@ export function VoteButton({
           }}
         />
       )}
-      <div className="relative z-10 flex items-center gap-4 w-full">
-        {children}
-      </div>
+      <div className="relative z-10 flex items-center gap-4 w-full">{children}</div>
     </button>
   );
 }
