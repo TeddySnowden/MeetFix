@@ -18,7 +18,7 @@ interface VoteButtonProps {
   className?: string;
 }
 
-const LONG_PRESS_MS = 2000;
+const LONG_PRESS_MS = 1500;
 const DOUBLE_TAP_MS = 2000;
 
 export function VoteButton({
