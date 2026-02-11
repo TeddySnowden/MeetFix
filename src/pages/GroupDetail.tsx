@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Plus, Calendar, Users, Vote, UserPlus, Trash2, MoreVertical, ChevronDown, RefreshCw, Settings } from "lucide-react";
-import { format } from "date-fns";
+import { format, differenceInCalendarDays } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -173,65 +173,86 @@ export default function GroupDetail() {
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider px-1">
             Events
           </h3>
-          {events.map((ev: EventWithSlotInfo) => {
-            const slotLabel = ev.first_slot_at
-              ? `${format(new Date(ev.first_slot_at), "MMM d")} ${format(
-                  new Date(ev.first_slot_at),
-                  "HH:mm"
-                )}`
-              : "No slots";
-            const voteLabel = `${ev.total_votes}/${memberCount} votes`;
+          {(() => {
+            const now = Date.now();
+            // Calculate density for each event based on days until event
+            const eventsWithDensity = events.map((ev: EventWithSlotInfo) => {
+              const eventDate = ev.first_slot_at ? new Date(ev.first_slot_at).getTime() : null;
+              const daysToEvent = eventDate ? Math.max(0, Math.floor((eventDate - now) / 86400000)) : 999;
+              const stepIndex = Math.max(0, Math.min(10, 11 - daysToEvent));
+              const densityRatio = stepIndex / 10;
+              return { ev, densityRatio };
+            });
+            const maxRatio = Math.max(...eventsWithDensity.map((e) => e.densityRatio));
 
-            return (
-              <div
-                key={ev.id}
-                className="relative w-full bg-card rounded-xl p-4 shadow-soft hover:shadow-card transition-all"
-              >
-                <button
-                  onClick={() => navigate(`/e/${ev.id}`)}
-                  className="w-full text-left flex items-center gap-4 active:scale-[0.98] transition-transform"
+            return eventsWithDensity.map(({ ev, densityRatio }) => {
+              const STEP_COLORS = ["#f00", "#f80", "#fa0", "#fd0", "#af0", "#7f7", "#5f5", "#0f8", "#08f", "#f0f"];
+              const colorIdx = Math.min(Math.floor(densityRatio * 10), 9);
+              const color = STEP_COLORS[colorIdx];
+              const pct = Math.round(densityRatio * 100);
+              const isClosest = densityRatio > 0 && densityRatio === maxRatio;
+
+              const slotLabel = ev.first_slot_at
+                ? `${format(new Date(ev.first_slot_at), "MMM d")} ${format(new Date(ev.first_slot_at), "HH:mm")}`
+                : "No slots";
+              const voteLabel = `${ev.total_votes}/${memberCount} votes`;
+
+              return (
+                <div
+                  key={ev.id}
+                  className={`relative w-full rounded-xl p-4 shadow-soft hover:shadow-card transition-all ${isClosest ? "cyberpunk-glitch" : ""}`}
+                  style={{
+                    background: densityRatio > 0
+                      ? `linear-gradient(to right, ${color} 0%, ${color} ${pct}%, #1f2937 ${pct}%)`
+                      : undefined,
+                  }}
                 >
-                  <div className="w-12 h-12 rounded-xl gradient-coral flex items-center justify-center flex-shrink-0">
-                    <Calendar className="w-6 h-6 text-accent-foreground" />
+                  <button
+                    onClick={() => navigate(`/e/${ev.id}`)}
+                    className="w-full text-left flex items-center gap-4 active:scale-[0.98] transition-transform"
+                  >
+                    <div className="w-12 h-12 rounded-xl gradient-coral flex items-center justify-center flex-shrink-0">
+                      <Calendar className="w-6 h-6 text-accent-foreground" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-white truncate">
+                        {ev.name}
+                      </h3>
+                      <p className="text-sm text-white/70 truncate flex items-center gap-1.5">
+                        <span>{slotLabel}</span>
+                        <span className="text-white/30">·</span>
+                        <Vote className="w-3 h-3 inline" />
+                        <span>{voteLabel}</span>
+                      </p>
+                    </div>
+                  </button>
+                  <div className="absolute top-2 right-2 flex items-center gap-1">
+                    {(isOwner || ev.created_by === user?.id) && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => e.stopPropagation()}>
+                            <MoreVertical className="w-4 h-4 text-white/60" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteEventId(ev.id);
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete Event
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-foreground truncate">
-                      {ev.name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground truncate flex items-center gap-1.5">
-                      <span>{slotLabel}</span>
-                      <span className="text-border">·</span>
-                      <Vote className="w-3 h-3 inline" />
-                      <span>{voteLabel}</span>
-                    </p>
-                  </div>
-                </button>
-                <div className="absolute top-2 right-2 flex items-center gap-1">
-                  {(isOwner || ev.created_by === user?.id) && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => e.stopPropagation()}>
-                          <MoreVertical className="w-4 h-4 text-muted-foreground" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          className="text-destructive focus:text-destructive"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeleteEventId(ev.id);
-                          }}
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Delete Event
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
                 </div>
-              </div>
-            );
-          })}
+              );
+            });
+          })()}
         </div>
       ) : (
         <div className="bg-card rounded-2xl shadow-card p-6 text-center">
