@@ -12,6 +12,8 @@ interface VoteButtonProps {
   disabled: boolean;
   isWinner: boolean;
   voteRatio: number;
+  voteCount: number;
+  memberCount: number;
   onVoteYes: () => void;
   onVoteNo: () => void;
   children: ReactNode;
@@ -26,6 +28,8 @@ export function VoteButton({
   disabled,
   isWinner,
   voteRatio,
+  voteCount,
+  memberCount,
   onVoteYes,
   onVoteNo,
   children,
@@ -118,6 +122,12 @@ export function VoteButton({
 
   const sweepPct = sweepProgress !== null ? Math.round(sweepProgress * 100) : null;
 
+  // Density background for voted state (no sweep active)
+  const densityRatio = memberCount > 0 ? Math.min(voteCount / memberCount, 1) : 0;
+  const densityPct = Math.round(densityRatio * 100);
+  const densityColor = getStepColor(densityRatio);
+  const showDensityBg = voted && sweepProgress === null;
+
   return (
     <button
       onPointerDown={handlePressStart}
@@ -126,7 +136,14 @@ export function VoteButton({
       onPointerCancel={handlePressEnd}
       onContextMenu={(e) => e.preventDefault()}
       className={`relative overflow-hidden select-none touch-none ${className}`}
-      style={{ WebkitUserSelect: "none" }}
+      style={{
+        WebkitUserSelect: "none",
+        ...(showDensityBg
+          ? {
+              background: `linear-gradient(to right, ${densityColor} 0%, ${densityColor} ${densityPct}%, #1f2937 ${densityPct}%)`,
+            }
+          : {}),
+      }}
     >
       {/* Sweep overlay */}
       {sweepPct !== null && (

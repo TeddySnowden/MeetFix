@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Check, Clock, Trophy, Calendar, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Layout } from "@/components/Layout";
@@ -39,6 +40,19 @@ export default function EventDetail() {
   const toggleVote = useToggleVote();
   const toggleActivityVote = useToggleActivityVote();
   const [finalizeOpen, setFinalizeOpen] = useState(false);
+  const [memberCount, setMemberCount] = useState(1);
+
+  // Fetch group member count for density ratio
+  useEffect(() => {
+    if (!event?.group_id) return;
+    supabase
+      .from("group_members")
+      .select("id", { count: "exact", head: true })
+      .eq("group_id", event.group_id)
+      .then(({ count }) => {
+        if (count && count > 0) setMemberCount(count);
+      });
+  }, [event?.group_id]);
 
   const isFinalized = event?.status === "finalized";
   const isOwner = user && event && user.id === event.created_by;
@@ -152,6 +166,8 @@ export default function EventDetail() {
                       disabled={toggleVote.isPending || isFinalized}
                       isWinner={isWinner}
                       voteRatio={totalSlotVotes > 0 ? slot.vote_count / totalSlotVotes : 0}
+                      voteCount={slot.vote_count}
+                      memberCount={memberCount}
                       onVoteYes={() => handleVote(slot)}
                       onVoteNo={() => handleVote(slot)}
                       className={`w-full rounded-xl p-4 shadow-soft transition-all text-left ${
@@ -216,6 +232,8 @@ export default function EventDetail() {
                       disabled={toggleActivityVote.isPending || isFinalized}
                       isWinner={isWinner}
                       voteRatio={totalActivityVotes > 0 ? act.vote_count / totalActivityVotes : 0}
+                      voteCount={act.vote_count}
+                      memberCount={memberCount}
                       onVoteYes={() => handleActivityVote(act)}
                       onVoteNo={() => handleActivityVote(act)}
                       className={`w-full rounded-xl p-4 shadow-soft transition-all text-left ${
