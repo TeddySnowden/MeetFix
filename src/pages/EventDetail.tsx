@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Check, Clock, Trophy, Calendar, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Header } from "@/components/Header";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { FinalizeDialog } from "@/components/FinalizeDialog";
 import { BringItemsList } from "@/components/BringItemsList";
+import { VoteDensityBar } from "@/components/VoteDensityBar";
 import { useAuth } from "@/hooks/useAuth";
 import {
   useEventDetail,
@@ -71,6 +72,11 @@ export default function EventDetail() {
   const finalizedSlot = isFinalized && event?.finalized_date
     ? formatSlot(event.finalized_date)
     : null;
+
+  const totalSlotVotes = useMemo(() => (slots || []).reduce((s, sl) => s + sl.vote_count, 0), [slots]);
+  const maxSlotVotes = useMemo(() => Math.max(0, ...(slots || []).map(s => s.vote_count)), [slots]);
+  const totalActivityVotes = useMemo(() => (activities || []).reduce((s, a) => s + a.vote_count, 0), [activities]);
+  const maxActivityVotes = useMemo(() => Math.max(0, ...(activities || []).map(a => a.vote_count)), [activities]);
 
   return (
     <Layout>
@@ -139,42 +145,48 @@ export default function EventDetail() {
                 const { day, time } = formatSlot(slot.slot_at);
                 const isWinner = isFinalized && event?.finalized_slot_id === slot.id;
                 return (
-                  <button
-                    key={slot.id}
-                    onClick={() => handleVote(slot)}
-                    disabled={toggleVote.isPending || isFinalized}
-                    className={`w-full rounded-xl p-4 shadow-soft transition-all text-left flex items-center gap-4 ${
-                      isFinalized ? "opacity-70 cursor-default" : "active:scale-[0.98]"
-                    } ${
-                      isWinner
-                        ? "bg-primary/10 border-2 border-primary"
-                        : slot.voted_by_me
+                  <div key={slot.id}>
+                    <button
+                      onClick={() => handleVote(slot)}
+                      disabled={toggleVote.isPending || isFinalized}
+                      className={`w-full rounded-xl p-4 shadow-soft transition-all text-left flex items-center gap-4 ${
+                        isFinalized ? "opacity-70 cursor-default" : "active:scale-[0.98]"
+                      } ${
+                        isWinner
                           ? "bg-primary/10 border-2 border-primary"
-                          : "bg-card border-2 border-transparent hover:shadow-card"
-                    }`}
-                  >
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                      isWinner || slot.voted_by_me ? "gradient-primary" : "bg-secondary"
-                    }`}>
-                      {isWinner ? (
-                        <Trophy className="w-6 h-6 text-primary-foreground" />
-                      ) : slot.voted_by_me ? (
-                        <Check className="w-6 h-6 text-primary-foreground" />
-                      ) : (
-                        <Clock className="w-6 h-6 text-muted-foreground" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-foreground">{day}</h4>
-                      <p className="text-sm text-muted-foreground">{time}</p>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <span className="text-lg font-bold text-foreground">{slot.vote_count}</span>
-                      <p className="text-xs text-muted-foreground">
-                        {slot.vote_count === 1 ? "vote" : "votes"}
-                      </p>
-                    </div>
-                  </button>
+                          : slot.voted_by_me
+                            ? "bg-primary/10 border-2 border-primary"
+                            : "bg-card border-2 border-transparent hover:shadow-card"
+                      }`}
+                    >
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                        isWinner || slot.voted_by_me ? "gradient-primary" : "bg-secondary"
+                      }`}>
+                        {isWinner ? (
+                          <Trophy className="w-6 h-6 text-primary-foreground" />
+                        ) : slot.voted_by_me ? (
+                          <Check className="w-6 h-6 text-primary-foreground" />
+                        ) : (
+                          <Clock className="w-6 h-6 text-muted-foreground" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-foreground">{day}</h4>
+                        <p className="text-sm text-muted-foreground">{time}</p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <span className="text-lg font-bold text-foreground">{slot.vote_count}</span>
+                        <p className="text-xs text-muted-foreground">
+                          {slot.vote_count === 1 ? "vote" : "votes"}
+                        </p>
+                      </div>
+                    </button>
+                    <VoteDensityBar
+                      voteCount={slot.vote_count}
+                      totalVotes={totalSlotVotes}
+                      isHighest={slot.vote_count === maxSlotVotes && maxSlotVotes > 0}
+                    />
+                  </div>
                 );
               })
             ) : (
@@ -193,41 +205,47 @@ export default function EventDetail() {
               {activities.map((act) => {
                 const isWinner = isFinalized && event?.finalized_activity === act.name;
                 return (
-                  <button
-                    key={act.id}
-                    onClick={() => handleActivityVote(act)}
-                    disabled={toggleActivityVote.isPending || isFinalized}
-                    className={`w-full rounded-xl p-4 shadow-soft transition-all text-left flex items-center gap-4 ${
-                      isFinalized ? "opacity-70 cursor-default" : "active:scale-[0.98]"
-                    } ${
-                      isWinner
-                        ? "bg-primary/10 border-2 border-primary"
-                        : act.voted_by_me
+                  <div key={act.id}>
+                    <button
+                      onClick={() => handleActivityVote(act)}
+                      disabled={toggleActivityVote.isPending || isFinalized}
+                      className={`w-full rounded-xl p-4 shadow-soft transition-all text-left flex items-center gap-4 ${
+                        isFinalized ? "opacity-70 cursor-default" : "active:scale-[0.98]"
+                      } ${
+                        isWinner
                           ? "bg-primary/10 border-2 border-primary"
-                          : "bg-card border-2 border-transparent hover:shadow-card"
-                    }`}
-                  >
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                      isWinner || act.voted_by_me ? "gradient-primary" : "bg-secondary"
-                    }`}>
-                      {isWinner ? (
-                        <Trophy className="w-6 h-6 text-primary-foreground" />
-                      ) : act.voted_by_me ? (
-                        <Check className="w-6 h-6 text-primary-foreground" />
-                      ) : (
-                        <Sparkles className="w-6 h-6 text-muted-foreground" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-foreground">{act.name}</h4>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <span className="text-lg font-bold text-foreground">{act.vote_count}</span>
-                      <p className="text-xs text-muted-foreground">
-                        {act.vote_count === 1 ? "vote" : "votes"}
-                      </p>
-                    </div>
-                  </button>
+                          : act.voted_by_me
+                            ? "bg-primary/10 border-2 border-primary"
+                            : "bg-card border-2 border-transparent hover:shadow-card"
+                      }`}
+                    >
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                        isWinner || act.voted_by_me ? "gradient-primary" : "bg-secondary"
+                      }`}>
+                        {isWinner ? (
+                          <Trophy className="w-6 h-6 text-primary-foreground" />
+                        ) : act.voted_by_me ? (
+                          <Check className="w-6 h-6 text-primary-foreground" />
+                        ) : (
+                          <Sparkles className="w-6 h-6 text-muted-foreground" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-foreground">{act.name}</h4>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <span className="text-lg font-bold text-foreground">{act.vote_count}</span>
+                        <p className="text-xs text-muted-foreground">
+                          {act.vote_count === 1 ? "vote" : "votes"}
+                        </p>
+                      </div>
+                    </button>
+                    <VoteDensityBar
+                      voteCount={act.vote_count}
+                      totalVotes={totalActivityVotes}
+                      isHighest={act.vote_count === maxActivityVotes && maxActivityVotes > 0}
+                    />
+                  </div>
                 );
               })}
             </div>
