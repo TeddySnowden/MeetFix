@@ -1,5 +1,9 @@
 import { useRef, useState, useCallback, ReactNode } from "react";
 
+function vibrate(ms: number) {
+  if (navigator.vibrate) navigator.vibrate(ms);
+}
+
 const STEP_COLORS = ["#f00", "#f80", "#fa0", "#fd0", "#af0", "#7f7", "#5f5", "#0f8", "#08f", "#f0f"];
 
 function getStepColor(ratio: number): string {
@@ -81,6 +85,7 @@ export function VoteButton({
       // Reverse sweep animation
       setReverseSweep(true);
       setSweepProgress(1);
+      vibrate(30); // Medium haptic for vote NO
       const start = performance.now();
       const animateReverse = () => {
         const elapsed = performance.now() - start;
@@ -105,15 +110,16 @@ export function VoteButton({
     pressTimer.current = setTimeout(() => {
       isPressing.current = false;
       setSweepProgress(null);
+      vibrate(15); // Light haptic for vote YES
       onVoteYes();
     }, LONG_PRESS_MS);
   }, [disabled, voted, startSweep, onVoteYes, onVoteNo]);
 
   const handlePressEnd = useCallback(() => {
     if (isPressing.current) {
-      // Released too early – cancel
       cancelSweep();
       setSweepProgress(null);
+      vibrate(10); // Selection haptic on release
     }
   }, [cancelSweep]);
 
