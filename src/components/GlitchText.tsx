@@ -30,7 +30,7 @@ export function GlitchText({ text, className = "", intervalRange = [1, 3] }: Gli
         // Replace random chars with glitch characters
         const chars = orig.split("").map((ch) => {
           if (ch === " ") return ch;
-          return Math.random() < 0.8 ? GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)] : ch;
+          return Math.random() < 0.1 ? GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)] : ch;
         });
         setDisplay(chars.join(""));
         step++;
