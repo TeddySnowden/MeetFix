@@ -8,7 +8,7 @@ interface GlitchTextProps {
   intervalRange?: [number, number]; // min/max seconds between glitches
 }
 
-export function GlitchText({ text, className = "", intervalRange = [5, 20] }: GlitchTextProps) {
+export function GlitchText({ text, className = "", intervalRange = [1, 3] }: GlitchTextProps) {
   const [display, setDisplay] = useState(text);
   const [isGlitching, setIsGlitching] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
