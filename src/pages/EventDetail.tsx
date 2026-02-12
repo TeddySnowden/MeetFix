@@ -10,6 +10,7 @@ import { FinalizeDialog } from "@/components/FinalizeDialog";
 import { BringItemsList } from "@/components/BringItemsList";
 import { VoteDensityBar } from "@/components/VoteDensityBar";
 import { VoteButton } from "@/components/VoteButton";
+import { AutoFixVoteButton } from "@/components/AutoFixVoteButton";
 import { useAuth } from "@/hooks/useAuth";
 import {
   useEventDetail,
@@ -153,6 +154,13 @@ export default function EventDetail() {
         </div>
       ) : (
         <>
+          {/* Auto-Fix Vote */}
+          {!isFinalized && eventId && (
+            <div className="mb-4">
+              <AutoFixVoteButton eventId={eventId} />
+            </div>
+          )}
+
           {/* Time Slots */}
           <div className="space-y-3">
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider px-1">

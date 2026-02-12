@@ -43,7 +43,6 @@ import { useGroups, useDeleteGroup, useUpdateGroup } from "@/hooks/useGroups";
 import { useGroupEventsWithSlots, EventWithSlotInfo, useDeleteEvent } from "@/hooks/useEvents";
 import { AddEventDialog } from "@/components/AddEventDialog";
 import { GlitchText } from "@/components/GlitchText";
-import { AutoFixVoteButton } from "@/components/AutoFixVoteButton";
 
 function generateInviteCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -240,9 +239,6 @@ export default function GroupDetail() {
                       </p>
                     </div>
                     </button>
-                    {ev.status !== "finalized" && (
-                      <AutoFixVoteButton eventId={ev.id} />
-                    )}
                     <div className="absolute top-2 right-2 flex items-center gap-1">
                       {(isOwner || ev.created_by === user?.id) && (
                         <DropdownMenu>
