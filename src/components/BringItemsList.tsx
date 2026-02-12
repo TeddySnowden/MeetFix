@@ -19,7 +19,7 @@ export function BringItemsList({ eventId, isOwner }: BringItemsListProps) {
   const deleteItem = useDeleteItem();
   const [addOpen, setAddOpen] = useState(false);
 
-  const myClaimExists = items?.some((item) => item.claim?.user_id === user?.id);
+  const myClaimCount = items?.filter((item) => item.claim?.user_id === user?.id).length ?? 0;
 
   const handleClaim = async (item: BringItem) => {
     if (!user) {
@@ -99,7 +99,7 @@ export function BringItemsList({ eventId, isOwner }: BringItemsListProps) {
                   )}
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  {!isClaimed && user && !myClaimExists && (
+                  {!isClaimed && user && (
                     <Button
                       size="sm"
                       variant="outline"
