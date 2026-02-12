@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Check, Clock, Trophy, Calendar, Sparkles, PackageCheck, RotateCcw } from "lucide-react";
+import { ArrowLeft, Check, Clock, Trophy, Calendar, Sparkles, PackageCheck, RotateCcw, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Layout } from "@/components/Layout";
 import { Header } from "@/components/Header";
@@ -25,6 +25,9 @@ import {
 } from "@/hooks/useEvents";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
+import { downloadIcsFile } from "@/lib/generateIcs";
+import { useScheduleNotifications } from "@/hooks/useNotifications";
+import { useBringItems } from "@/hooks/useItems";
 
 function formatSlot(iso: string) {
   const d = new Date(iso);
@@ -45,6 +48,8 @@ export default function EventDetail() {
   const toggleActivityVote = useToggleActivityVote();
   const packUpEvent = usePackUpEvent();
   const reopenEvent = useReopenEvent();
+  const scheduleNotifications = useScheduleNotifications();
+  const { data: bringItems } = useBringItems(eventId);
   const queryClient = useQueryClient();
   const [finalizeOpen, setFinalizeOpen] = useState(false);
   const [memberCount, setMemberCount] = useState(1);
@@ -171,6 +176,41 @@ export default function EventDetail() {
         </div>
       )}
 
+      {/* ICS Calendar Download - finalized events */}
+      {isFinalized && event?.finalized_date && (
+        <div className="mb-4">
+          <Button
+            className="w-full font-bold text-base tracking-wide rounded-xl transition-all"
+            style={{
+              background: 'linear-gradient(135deg, #0ff, #0f8)',
+              color: '#000',
+              border: '2px solid #0ff',
+              boxShadow: '0 0 12px #0ff4, 0 0 24px #0f84',
+            }}
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(30);
+              const itemList = (bringItems || [])
+                .map((i: any) => `${i.emoji || "📦"} ${i.name} (x${i.max_quantity})`)
+                .join("\\n");
+              const desc = [
+                event.finalized_activity ? `Activity: ${event.finalized_activity}` : "",
+                itemList ? `\\nBring Items:\\n${itemList}` : "",
+              ].filter(Boolean).join("\\n");
+
+              downloadIcsFile({
+                title: `${event.name} - Items Packed ☑️`,
+                description: desc,
+                startDate: event.finalized_date!,
+              });
+              toast({ title: "Calendar file downloaded! 📅" });
+            }}
+          >
+            <Download className="w-5 h-5 mr-2" />
+            Sync Calendar 📅
+          </Button>
+        </div>
+      )}
+
       {/* Pack Up / Reopen buttons - owner only, finalized events */}
       {isFinalized && isOwner && (
         <div className="flex gap-2 mb-4">
@@ -184,9 +224,18 @@ export default function EventDetail() {
               cursor: isPackedUp ? 'default' : 'pointer',
             }}
             disabled={isPackedUp || packUpEvent.isPending}
-            onClick={() => {
+            onClick={async () => {
               if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
-              packUpEvent.mutate({ eventId: eventId! });
+              await packUpEvent.mutateAsync({ eventId: eventId! });
+              if (event?.finalized_date && event?.group_id) {
+                scheduleNotifications.mutate({
+                  eventId: eventId!,
+                  eventName: event.name,
+                  finalizedDate: event.finalized_date,
+                  groupId: event.group_id,
+                });
+              }
+              toast({ title: "Packed up! Notifications scheduled 🔔" });
             }}
           >
             <PackageCheck className="w-5 h-5 mr-2" />
