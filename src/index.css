@@ -187,8 +187,8 @@
   /* JS glitch text effect */
   .glitch-text-active {
     text-shadow:
-      1px 0 #00ff41,
-      -1px 0 #ff0041;
+      10px 0 #00ff41,
+      -10px 0 #ff0041;
   }
 
   .glitch-scanline {
