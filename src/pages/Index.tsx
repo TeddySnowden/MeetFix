@@ -40,7 +40,7 @@ const Index = () => {
   const upcomingGroups = groups || [];
   const firstName = user?.user_metadata?.full_name?.split(" ")[0] || "User";
   const myClaimedItem = heroItems?.find(
-    (item) => item.claim && item.claim.user_id === user?.id
+    (item) => item.claims.some(c => c.user_id === user?.id)
   );
 
   return (
