@@ -96,26 +96,15 @@ export function useCreateGroup() {
 
   return useMutation({
     mutationFn: async (name: string) => {
-      console.log("useCreateGroup - user:", user);
-      if (!user || !user.id) { throw new Error("User not authenticated - no valid user.id"); }
+      if (!user || !user.id) { throw new Error("User not authenticated"); }
 
-      const invite_code = generateInviteCode();
-
-      const { data: group, error } = await supabase
-        .from("groups")
-        .insert({ name, created_by: user.id, invite_code })
-        .select()
-        .single();
+      const { data, error } = await supabase
+        .rpc("create_group", { group_name: name });
 
       if (error) throw error;
 
-      const { error: memberErr } = await supabase
-        .from("group_members")
-        .insert({ group_id: group.id, user_id: user.id, role: "owner" });
-
-      if (memberErr) throw memberErr;
-
-      return group;
+      // data is jsonb with id, name, invite_code
+      return data as { id: string; name: string; invite_code: string };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["groups"] });
