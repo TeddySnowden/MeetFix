@@ -63,7 +63,7 @@ const GetReady = () => {
   // Shopping progress: claimed items / total items
   const shopProgress = useMemo(() => {
     if (!items?.length) return 0;
-    const claimed = items.filter((i) => !!i.claim).length;
+    const claimed = items.filter((i) => i.claims.length >= i.max_quantity).length;
     return Math.round((claimed / items.length) * 100);
   }, [items]);
 
@@ -166,7 +166,7 @@ const GetReady = () => {
       color: "from-amber-500 to-orange-600",
       bgColor: "bg-amber-500/20",
       textColor: "text-amber-400",
-      detail: items ? `${items.filter((i) => !!i.claim).length}/${items.length} items` : null,
+      detail: items ? `${items.filter((i) => i.claims.length >= i.max_quantity).length}/${items.length} items` : null,
       action: null,
     },
     {
@@ -292,7 +292,7 @@ const GetReady = () => {
               <div key={item.id} className="flex items-center gap-3 px-5 py-3">
                 <span className="text-lg flex-shrink-0">{item.emoji || "📦"}</span>
                 <span className="text-white/80 text-sm flex-1">{item.name}</span>
-                {item.claim ? (
+                {item.claims.length >= item.max_quantity ? (
                   <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
                 ) : (
                   <Circle className="w-5 h-5 text-yellow-400 flex-shrink-0" />

@@ -9,7 +9,8 @@ export interface BringItem {
   emoji: string;
   created_by: string;
   created_at: string;
-  claim?: ItemClaim | null;
+  max_quantity: number;
+  claims: ItemClaim[];
 }
 
 export interface ItemClaim {
@@ -44,7 +45,7 @@ export function useBringItems(eventId: string | undefined) {
 
       return (items || []).map((item: any) => ({
         ...item,
-        claim: (claims || []).find((c: any) => c.item_id === item.id) || null,
+        claims: (claims || []).filter((c: any) => c.item_id === item.id),
       }));
     },
     enabled: !!eventId && !!user,
@@ -113,7 +114,7 @@ export function useClaimItem() {
 
       const { error } = await supabase
         .from("item_claims")
-        .upsert({ item_id: itemId, user_id: user.id }, { onConflict: "user_id" });
+        .insert({ item_id: itemId, user_id: user.id });
 
       if (error) throw error;
       return { eventId };

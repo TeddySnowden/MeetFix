@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Trash2, Hand, UserCheck } from "lucide-react";
+import { Plus, Trash2, Hand } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useBringItems, useClaimItem, useUnclaimItem, useDeleteItem, BringItem } from "@/hooks/useItems";
@@ -19,7 +19,7 @@ export function BringItemsList({ eventId, isOwner }: BringItemsListProps) {
   const deleteItem = useDeleteItem();
   const [addOpen, setAddOpen] = useState(false);
 
-  const myClaimCount = items?.filter((item) => item.claim?.user_id === user?.id).length ?? 0;
+  const myClaimCount = items?.filter((item) => item.claims.some(c => c.user_id === user?.id)).length ?? 0;
 
   const handleClaim = async (item: BringItem) => {
     if (!user) {
@@ -75,31 +75,30 @@ export function BringItemsList({ eventId, isOwner }: BringItemsListProps) {
       {items && items.length > 0 ? (
         <div className="space-y-2">
           {items.map((item) => {
-            const isClaimed = !!item.claim;
-            const isMyItem = item.claim?.user_id === user?.id;
+            const claimCount = item.claims.length;
+            const isFull = claimCount >= item.max_quantity;
+            const isMyItem = item.claims.some(c => c.user_id === user?.id);
             return (
               <div
                 key={item.id}
                 className={`rounded-xl p-4 flex items-center gap-3 transition-all ${
-                  isClaimed
+                  isFull
                     ? "bg-primary/5 border-2 border-primary/30"
                     : "bg-card border-2 border-transparent shadow-soft"
                 }`}
               >
                 <span className="text-2xl flex-shrink-0">{item.emoji}</span>
                 <div className="flex-1 min-w-0">
-                  <p className={`font-medium ${isClaimed ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                  <p className={`font-medium ${isFull ? "text-muted-foreground line-through" : "text-foreground"}`}>
                     {item.name}
                   </p>
-                  {isClaimed && (
-                    <p className="text-xs text-primary flex items-center gap-1">
-                      <UserCheck className="w-3 h-3" />
-                      {isMyItem ? "You claimed this" : "Claimed"}
-                    </p>
-                  )}
+                  <p className="text-xs text-muted-foreground">
+                    {claimCount}/{item.max_quantity} claimed
+                    {isMyItem && <span className="text-primary ml-1">· You claimed</span>}
+                  </p>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  {!isClaimed && user && (
+                  {!isFull && !isMyItem && user && (
                     <Button
                       size="sm"
                       variant="outline"
