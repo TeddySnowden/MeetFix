@@ -180,8 +180,8 @@
 
   /* Cyberpunk glitch animation */
   .cyberpunk-glitch {
-    animation: glitch 1s infinite linear;
-    border: 2px solid #00ff41;
+    animation: glitch 2s infinite linear;
+    border: 5px solid #00ff41;
   }
 
   /* JS glitch text effect */
