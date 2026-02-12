@@ -134,6 +134,19 @@
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
+
+  /* Global white text visibility - subtle black shadow */
+  button,
+  label,
+  ::placeholder,
+  li,
+  .text-primary-foreground,
+  .text-accent-foreground,
+  .text-destructive-foreground,
+  .text-success-foreground,
+  .text-warning-foreground {
+    text-shadow: 0 0 2px #000000;
+  }
 }
 
 /* Custom utilities */
