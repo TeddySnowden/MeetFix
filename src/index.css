@@ -181,7 +181,7 @@
   /* Cyberpunk glitch animation */
   .cyberpunk-glitch {
     animation: glitch 5s infinite linear;
-    border: 20px solid #00ff41;
+    border: 2px solid #00ff41;
   }
 
   /* JS glitch text effect */
