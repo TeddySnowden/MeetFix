@@ -43,6 +43,7 @@ import { useGroups, useDeleteGroup, useUpdateGroup } from "@/hooks/useGroups";
 import { useGroupEventsWithSlots, EventWithSlotInfo, useDeleteEvent } from "@/hooks/useEvents";
 import { AddEventDialog } from "@/components/AddEventDialog";
 import { GlitchText } from "@/components/GlitchText";
+import { AutoFixVoteButton } from "@/components/AutoFixVoteButton";
 
 function generateInviteCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -238,30 +239,33 @@ export default function GroupDetail() {
                         <span>{voteLabel}</span>
                       </p>
                     </div>
-                  </button>
-                  <div className="absolute top-2 right-2 flex items-center gap-1">
-                    {(isOwner || ev.created_by === user?.id) && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => e.stopPropagation()}>
-                            <MoreVertical className="w-4 h-4 text-white/60" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDeleteEventId(ev.id);
-                            }}
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Delete Event
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                    </button>
+                    {ev.status !== "finalized" && (
+                      <AutoFixVoteButton eventId={ev.id} />
                     )}
-                  </div>
+                    <div className="absolute top-2 right-2 flex items-center gap-1">
+                      {(isOwner || ev.created_by === user?.id) && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => e.stopPropagation()}>
+                              <MoreVertical className="w-4 h-4 text-white/60" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteEventId(ev.id);
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete Event
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                    </div>
                 </div>
               );
             });
