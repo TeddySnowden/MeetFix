@@ -134,10 +134,10 @@ export function AddEventDialog({ open, onOpenChange, groupId }: AddEventDialogPr
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) resetAndClose(); else onOpenChange(v); }}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto border border-purple-400/40 bg-black/60 backdrop-blur-xl shadow-[0_0_30px_rgba(168,85,247,0.25)]">
         <DialogHeader>
-          <DialogTitle>Add Event</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-purple-200 drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]">Add Event</DialogTitle>
+          <DialogDescription className="text-purple-300/60">
             {step === 0
               ? "Add 1–3 date slots for the group to vote on."
               : "Add 1–3 activity options for the group to vote on."}
@@ -148,12 +148,12 @@ export function AddEventDialog({ open, onOpenChange, groupId }: AddEventDialogPr
         <div className="flex items-center gap-2 mb-2">
           {["Date Slots", "Activities"].map((label, i) => (
             <div key={i} className="flex items-center gap-2">
-              {i > 0 && <div className="w-6 h-px bg-border" />}
+              {i > 0 && <div className="w-6 h-px bg-purple-400/30" />}
               <div className={cn(
                 "flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full transition-colors",
-                step === i ? "bg-primary text-primary-foreground" : step > i ? "bg-primary/20 text-primary" : "bg-secondary text-muted-foreground"
+                step === i ? "bg-gradient-to-r from-purple-600 to-cyan-500 text-white" : step > i ? "bg-purple-500/20 text-purple-300" : "bg-white/5 text-purple-300/50"
               )}>
-                <span className="w-4 h-4 rounded-full bg-background/20 flex items-center justify-center text-[10px] font-bold">{i + 1}</span>
+                <span className="w-4 h-4 rounded-full bg-black/30 flex items-center justify-center text-[10px] font-bold">{i + 1}</span>
                 {label}
               </div>
             </div>
@@ -163,28 +163,28 @@ export function AddEventDialog({ open, onOpenChange, groupId }: AddEventDialogPr
         {step === 0 && (
           <div className="space-y-3">
             <div>
-              <Label className="text-sm font-bold">Event Name</Label>
+              <Label className="text-sm font-bold text-purple-200">Event Name</Label>
               <Input
                 placeholder="e.g. BBQ Party, Team Dinner, Hiking Plans"
                 value={eventName}
                 onChange={(e) => setEventName(e.target.value)}
-                className="mt-1.5"
+                className="mt-1.5 bg-white/5 border-purple-400/30 text-purple-100 placeholder:text-purple-300/30 focus:border-purple-400/60 focus:shadow-[0_0_12px_rgba(168,85,247,0.3)] transition-all"
                 required
               />
             </div>
             {slots.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">Add date slots for voting (1–3 required)</p>
+              <p className="text-sm text-purple-300/50 text-center py-4">Add date slots for voting (1–3 required)</p>
             )}
             {slots.map((slot, idx) => (
-              <div key={idx} className="flex items-end gap-2 bg-secondary/50 rounded-lg p-3">
+              <div key={idx} className="flex items-end gap-2 bg-white/5 border border-purple-400/20 rounded-lg p-3">
                 <div className="flex-1 min-w-0 space-y-1">
-                  <Label className="text-xs">Date {idx + 1}</Label>
+                  <Label className="text-xs text-purple-300/70">Date {idx + 1}</Label>
                   <Popover open={slot.popoverOpen} onOpenChange={(o) => updateSlot(idx, { popoverOpen: o })}>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
                         size="sm"
-                        className={cn("w-full justify-start text-left font-normal", !slot.date && "text-muted-foreground")}
+                        className={cn("w-full justify-start text-left font-normal bg-white/5 border-purple-400/30 text-purple-200 hover:border-purple-400/50", !slot.date && "text-purple-300/40")}
                       >
                         <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
                         {slot.date ? format(slot.date, "MMM d") : "Date"}
@@ -203,9 +203,9 @@ export function AddEventDialog({ open, onOpenChange, groupId }: AddEventDialogPr
                   </Popover>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Time</Label>
+                  <Label className="text-xs text-purple-300/70">Time</Label>
                   <Select value={slot.time} onValueChange={(v) => updateSlot(idx, { time: v })}>
-                    <SelectTrigger className="w-[90px] h-9 text-sm">
+                    <SelectTrigger className="w-[90px] h-9 text-sm bg-white/5 border-purple-400/30 text-purple-200">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="max-h-56">
@@ -216,9 +216,9 @@ export function AddEventDialog({ open, onOpenChange, groupId }: AddEventDialogPr
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Dur.</Label>
+                  <Label className="text-xs text-purple-300/70">Dur.</Label>
                   <Select value={slot.duration} onValueChange={(v) => updateSlot(idx, { duration: v })}>
-                    <SelectTrigger className="w-[70px] h-9 text-sm">
+                    <SelectTrigger className="w-[70px] h-9 text-sm bg-white/5 border-purple-400/30 text-purple-200">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -240,12 +240,12 @@ export function AddEventDialog({ open, onOpenChange, groupId }: AddEventDialogPr
               </div>
             ))}
             {slots.length < 3 && (
-              <Button variant="outline" size="sm" className="w-full" onClick={addSlot}>
+              <Button variant="outline" size="sm" className="w-full border-purple-400/30 text-purple-300 hover:border-purple-400/50 hover:bg-purple-500/10" onClick={addSlot}>
                 <Plus className="w-4 h-4 mr-1" /> Add Date Slot
               </Button>
             )}
             <Button
-              className="w-full gradient-primary mt-2"
+              className="w-full bg-gradient-to-r from-purple-600 to-cyan-500 text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all mt-2"
               disabled={!allSlotsValid}
               onClick={() => setStep(1)}
             >
@@ -257,17 +257,17 @@ export function AddEventDialog({ open, onOpenChange, groupId }: AddEventDialogPr
         {step === 1 && (
           <div className="space-y-3">
             {activities.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">Add activities (1–3 required)</p>
+              <p className="text-sm text-purple-300/50 text-center py-4">Add activities (1–3 required)</p>
             )}
             {activities.map((act, idx) => (
-              <div key={idx} className="flex items-end gap-2 bg-secondary/50 rounded-lg p-3">
+              <div key={idx} className="flex items-end gap-2 bg-white/5 border border-purple-400/20 rounded-lg p-3">
                 <div className="flex-1 space-y-1">
-                  <Label className="text-xs">Activity {idx + 1}</Label>
+                  <Label className="text-xs text-purple-300/70">Activity {idx + 1}</Label>
                   <Input
                     value={act}
                     onChange={(e) => updateActivity(idx, e.target.value)}
                     placeholder="e.g. BBQ, Drinks, Hike..."
-                    className="h-9 text-sm"
+                    className="h-9 text-sm bg-white/5 border-purple-400/30 text-purple-100 placeholder:text-purple-300/30 focus:border-purple-400/60 focus:shadow-[0_0_12px_rgba(168,85,247,0.3)] transition-all"
                   />
                 </div>
                 <Button
@@ -282,16 +282,16 @@ export function AddEventDialog({ open, onOpenChange, groupId }: AddEventDialogPr
               </div>
             ))}
             {activities.length < 3 && (
-              <Button variant="outline" size="sm" className="w-full" onClick={addActivity}>
+              <Button variant="outline" size="sm" className="w-full border-purple-400/30 text-purple-300 hover:border-purple-400/50 hover:bg-purple-500/10" onClick={addActivity}>
                 <Plus className="w-4 h-4 mr-1" /> Add Activity
               </Button>
             )}
             <div className="flex gap-2 mt-2">
-              <Button variant="outline" className="flex-1" onClick={() => setStep(0)}>
+              <Button variant="outline" className="flex-1 border-purple-400/30 text-purple-300 hover:border-purple-400/50 hover:bg-purple-500/10" onClick={() => setStep(0)}>
                 Back
               </Button>
               <Button
-                className="flex-1 gradient-primary"
+                className="flex-1 bg-gradient-to-r from-purple-600 to-cyan-500 text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all"
                 disabled={!allActivitiesValid || createEvent.isPending}
                 onClick={handleCreate}
               >
