@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Check, Clock, Trophy, Calendar, Sparkles, PackageCheck } from "lucide-react";
+import { ArrowLeft, Check, Clock, Trophy, Calendar, Sparkles, PackageCheck, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Layout } from "@/components/Layout";
 import { Header } from "@/components/Header";
@@ -19,6 +19,7 @@ import {
   useActivities,
   useToggleActivityVote,
   usePackUpEvent,
+  useReopenEvent,
   TimeSlot,
   Activity,
 } from "@/hooks/useEvents";
@@ -43,6 +44,7 @@ export default function EventDetail() {
   const toggleVote = useToggleVote();
   const toggleActivityVote = useToggleActivityVote();
   const packUpEvent = usePackUpEvent();
+  const reopenEvent = useReopenEvent();
   const queryClient = useQueryClient();
   const [finalizeOpen, setFinalizeOpen] = useState(false);
   const [memberCount, setMemberCount] = useState(1);
@@ -169,25 +171,65 @@ export default function EventDetail() {
         </div>
       )}
 
-      {/* Pack Up button - owner only, finalized events */}
+      {/* Pack Up / Reopen buttons - owner only, finalized events */}
       {isFinalized && isOwner && (
+        <div className="flex gap-2 mb-4">
+          <Button
+            className="flex-1 font-bold text-base tracking-wide rounded-xl transition-all"
+            style={{
+              background: isPackedUp ? '#374151' : '#0f8',
+              color: isPackedUp ? '#9ca3af' : '#000',
+              border: `2px solid ${isPackedUp ? '#4b5563' : '#0f8'}`,
+              boxShadow: isPackedUp ? 'none' : '0 0 12px #0f8, 0 0 24px #0f844',
+              cursor: isPackedUp ? 'default' : 'pointer',
+            }}
+            disabled={isPackedUp || packUpEvent.isPending}
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
+              packUpEvent.mutate({ eventId: eventId! });
+            }}
+          >
+            <PackageCheck className="w-5 h-5 mr-2" />
+            {isPackedUp ? "Packed ✅" : "Pack Up ☑️"}
+          </Button>
+          <Button
+            className="flex-1 font-bold text-base tracking-wide rounded-xl transition-all"
+            style={{
+              background: '#dc2626',
+              color: '#fff',
+              border: '2px solid #ef4444',
+              boxShadow: '0 0 12px #dc262688, 0 0 24px #dc262644',
+            }}
+            disabled={reopenEvent.isPending}
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+              reopenEvent.mutate({ eventId: eventId! });
+            }}
+          >
+            <RotateCcw className="w-5 h-5 mr-2" />
+            Reopen ☒️
+          </Button>
+        </div>
+      )}
+
+      {/* Reopen for non-finalized packed events (edge case) */}
+      {!isFinalized && isOwner && isPackedUp && (
         <Button
           className="w-full mb-4 font-bold text-base tracking-wide rounded-xl transition-all"
           style={{
-            background: isPackedUp ? '#374151' : '#0f8',
-            color: isPackedUp ? '#9ca3af' : '#000',
-            border: `2px solid ${isPackedUp ? '#4b5563' : '#0f8'}`,
-            boxShadow: isPackedUp ? 'none' : '0 0 12px #0f8, 0 0 24px #0f844',
-            cursor: isPackedUp ? 'default' : 'pointer',
+            background: '#dc2626',
+            color: '#fff',
+            border: '2px solid #ef4444',
+            boxShadow: '0 0 12px #dc262688, 0 0 24px #dc262644',
           }}
-          disabled={isPackedUp || packUpEvent.isPending}
+          disabled={reopenEvent.isPending}
           onClick={() => {
-            if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
-            packUpEvent.mutate({ eventId: eventId! });
+            if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+            reopenEvent.mutate({ eventId: eventId! });
           }}
         >
-          <PackageCheck className="w-5 h-5 mr-2" />
-          {isPackedUp ? "Packed ✅" : "Pack Up ☑️"}
+          <RotateCcw className="w-5 h-5 mr-2" />
+          Reopen ☒️
         </Button>
       )}
 
