@@ -48,9 +48,11 @@ const Index = () => {
       {/* Top Bar */}
       <div className="px-6 pt-6 pb-2">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-black italic cyberpunk-logo tracking-tight">
+          <div className="flex-1" />
+          <h1 className="text-5xl font-black italic cyberpunk-logo tracking-tight">
             MeetFix
           </h1>
+          <div className="flex-1 flex justify-end">
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -81,6 +83,7 @@ const Index = () => {
               <User className="w-5 h-5 text-white/60" />
             </div>
           )}
+          </div>
         </div>
         {user && (
           <p className="text-white/70 text-base mt-1">
