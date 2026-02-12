@@ -86,10 +86,29 @@ const GetReady = () => {
   const dressProgress = calcTimeProgress(myTimeline?.dress_up_time, 1);
   const travelProgress = calcTimeProgress(myTimeline?.travel_time, 0.5);
 
+  const DRESS_PRESETS = [15, 30, 45, 60, 120];
+  const TRAVEL_PRESETS = [30, 60, 90, 120];
+
+  const handlePreset = async (minutes: number) => {
+    if (!heroEvent?.id || !heroEvent.finalized_date) return;
+
+    const eventDate = new Date(heroEvent.finalized_date);
+    const dt = new Date(eventDate.getTime() - minutes * 60000);
+    const iso = dt.toISOString();
+
+    if (timePickerOpen === "dress") {
+      await upsertTimeline.mutateAsync({ eventId: heroEvent.id, dressUpTime: iso });
+    } else {
+      await upsertTimeline.mutateAsync({ eventId: heroEvent.id, travelTime: iso });
+    }
+
+    setTimePickerOpen(null);
+    setTimeValue("");
+  };
+
   const handleSetTime = async () => {
     if (!heroEvent?.id || !timeValue) return;
 
-    // Build a full datetime from the event date + user time input
     const eventDate = new Date(heroEvent.finalized_date!);
     const [h, m] = timeValue.split(":").map(Number);
     const dt = new Date(eventDate);
@@ -313,9 +332,29 @@ const GetReady = () => {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-white/60 text-sm">
-              Event is on {formattedDate}. When will you{" "}
+              How long before the event ({formattedDate}) will you{" "}
               {timePickerOpen === "dress" ? "start getting dressed" : "start traveling"}?
             </p>
+            {/* Preset buttons */}
+            <div className="flex flex-wrap gap-2">
+              {(timePickerOpen === "dress" ? DRESS_PRESETS : TRAVEL_PRESETS).map((mins) => (
+                <Button
+                  key={mins}
+                  size="sm"
+                  variant="outline"
+                  disabled={upsertTimeline.isPending}
+                  className="border-emerald-400/40 text-emerald-400 hover:bg-emerald-400/20 hover:text-emerald-300 hover:border-emerald-400/60 bg-transparent font-bold"
+                  onClick={() => handlePreset(mins)}
+                >
+                  {mins}m
+                </Button>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 text-white/30 text-xs">
+              <div className="flex-1 h-px bg-white/10" />
+              or set exact time
+              <div className="flex-1 h-px bg-white/10" />
+            </div>
             <div>
               <Label className="text-white/70">Time</Label>
               <Input
