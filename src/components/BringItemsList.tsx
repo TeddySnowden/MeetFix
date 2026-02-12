@@ -1,5 +1,11 @@
 import { useState } from "react";
 import { Plus, Trash2, Hand } from "lucide-react";
+
+const STEP_COLORS = ["#f00", "#f80", "#fa0", "#fd0", "#af0", "#7f7", "#5f5", "#0f8", "#08f", "#f0f"];
+function getStepColor(ratio: number): string {
+  const idx = Math.min(Math.floor(ratio * 10), 9);
+  return STEP_COLORS[idx];
+}
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useBringItems, useClaimItem, useUnclaimItem, useDeleteItem, BringItem } from "@/hooks/useItems";
@@ -78,14 +84,16 @@ export function BringItemsList({ eventId, isOwner }: BringItemsListProps) {
             const claimCount = item.claims.length;
             const isFull = claimCount >= item.max_quantity;
             const isMyItem = item.claims.some(c => c.user_id === user?.id);
+            const densityRatio = item.max_quantity > 0 ? claimCount / item.max_quantity : 0;
+            const densityColor = getStepColor(densityRatio);
+            const densityPct = Math.round(densityRatio * 100);
             return (
               <div
                 key={item.id}
-                className={`rounded-xl p-4 flex items-center gap-3 transition-all ${
-                  isFull
-                    ? "bg-primary/5 border-2 border-primary/30"
-                    : "bg-card border-2 border-transparent shadow-soft"
-                }`}
+                className="rounded-xl p-4 flex items-center gap-3 transition-all border-2 border-transparent"
+                style={{
+                  background: `linear-gradient(to right, ${densityColor} 0%, ${densityColor} ${densityPct}%, #1f2937 ${densityPct}%)`,
+                }}
               >
                 <span className="text-2xl flex-shrink-0">{item.emoji}</span>
                 <div className="flex-1 min-w-0">
