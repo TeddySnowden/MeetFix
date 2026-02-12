@@ -87,18 +87,27 @@ export default function GroupDetail() {
 
       {/* Back + group name */}
       <div className="flex items-center gap-3 mb-6">
-        <Button variant="ghost" size="icon" className="rounded-full" onClick={() => navigate(-1)}>
-          <ArrowLeft className="w-5 h-5" />
+        <Button variant="ghost" size="icon" className="rounded-full bg-white/5 border border-purple-400/30 hover:border-purple-400/60 hover:shadow-[0_0_12px_rgba(168,85,247,0.3)] transition-all" onClick={() => navigate(-1)}>
+          <ArrowLeft className="w-5 h-5 text-purple-300" />
         </Button>
         <div className="flex-1 min-w-0">
-          <h2 className="text-lg font-bold text-foreground truncate">{group?.name || "Group"}</h2>
+          <h2 className="text-lg font-bold text-purple-100 truncate drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]">{group?.name || "Group"}</h2>
           {group?.member_count != null && (
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <Users className="w-3 h-3" />
+            <p className="text-xs text-purple-300/60 flex items-center gap-1">
+              <Users className="w-3 h-3 text-cyan-400/70" />
               {group.member_count} {group.member_count === 1 ? "member" : "members"}
             </p>
           )}
         </div>
+        {user && groupId && (
+          <button
+            onClick={() => setDialogOpen(true)}
+            className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-cyan-500 flex items-center justify-center text-white shadow-[0_0_16px_rgba(168,85,247,0.4)] hover:shadow-[0_0_24px_rgba(168,85,247,0.6)] active:scale-95 transition-all"
+            aria-label="Create Event"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
+        )}
         {isOwner && (
           <Button
             variant="ghost"
@@ -277,16 +286,7 @@ export default function GroupDetail() {
         </div>
       )}
 
-      {/* FAB */}
-      {user && groupId && (
-        <button
-          onClick={() => setDialogOpen(true)}
-          className="fixed bottom-6 right-6 w-14 h-14 rounded-full gradient-primary shadow-elevated flex items-center justify-center text-primary-foreground active:scale-95 transition-transform z-40"
-          aria-label="Add Event Slot"
-        >
-          <Plus className="w-6 h-6" />
-        </button>
-      )}
+      {/* FAB removed – create button is now in header */}
 
       {groupId && <AddEventDialog open={dialogOpen} onOpenChange={setDialogOpen} groupId={groupId} />}
 
