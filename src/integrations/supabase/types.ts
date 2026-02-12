@@ -93,6 +93,7 @@ export type Database = {
           event_id: string
           id: string
           is_suggestion: boolean | null
+          max_quantity: number
           name: string
         }
         Insert: {
@@ -102,6 +103,7 @@ export type Database = {
           event_id: string
           id?: string
           is_suggestion?: boolean | null
+          max_quantity?: number
           name: string
         }
         Update: {
@@ -111,6 +113,7 @@ export type Database = {
           event_id?: string
           id?: string
           is_suggestion?: boolean | null
+          max_quantity?: number
           name?: string
         }
         Relationships: [
