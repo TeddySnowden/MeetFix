@@ -73,23 +73,23 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md border border-purple-400/40 bg-black/60 backdrop-blur-xl shadow-[0_0_30px_rgba(168,85,247,0.25)]">
         {!createdGroup ? (
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>Create a Group</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-purple-200 drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]">Create a Group</DialogTitle>
+              <DialogDescription className="text-purple-300/60">
                 Name your group and invite friends to join.
               </DialogDescription>
             </DialogHeader>
             <div className="py-4">
-              <Label htmlFor="group-name">Group name</Label>
+              <Label htmlFor="group-name" className="text-purple-200/80">Group name</Label>
               <Input
                 id="group-name"
                 placeholder="e.g. Weekend Crew, Book Club"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="mt-2"
+                className="mt-2 bg-white/5 border-purple-500/30 text-purple-100 placeholder:text-purple-300/30 focus:border-purple-400/60 focus:shadow-[0_0_12px_rgba(168,85,247,0.3)] focus-visible:ring-purple-500/40"
                 autoFocus
               />
             </div>
@@ -97,10 +97,10 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
               <Button
                 type="submit"
                 disabled={!name.trim() || createGroup.isPending}
-                className="w-full gradient-primary"
+                className="w-full bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white border-0 shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)] transition-all duration-300"
               >
                 {createGroup.isPending ? (
-                  <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
                     <Plus className="w-4 h-4 mr-2" />
@@ -113,23 +113,23 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Check className="w-5 h-5 text-primary" />
+              <DialogTitle className="flex items-center gap-2 text-purple-200 drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]">
+                <Check className="w-5 h-5 text-cyan-400 drop-shadow-[0_0_6px_rgba(6,182,212,0.6)]" />
                 Group Created!
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-purple-300/60">
                 Share this invite link so others can join your group.
               </DialogDescription>
             </DialogHeader>
             <div className="py-4 space-y-3">
-              <div className="flex items-center gap-2 p-3 bg-secondary rounded-lg">
-                <Link className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                <span className="text-sm text-foreground truncate flex-1">{inviteLink}</span>
+              <div className="flex items-center gap-2 p-3 bg-white/5 border border-purple-500/20 rounded-lg">
+                <Link className="w-4 h-4 text-cyan-400/70 flex-shrink-0" />
+                <span className="text-sm text-purple-200 truncate flex-1">{inviteLink}</span>
               </div>
-              <Button onClick={handleCopy} className="w-full" variant="outline">
+              <Button onClick={handleCopy} className="w-full bg-white/5 border-purple-500/30 text-purple-200 hover:bg-white/10 hover:border-purple-400/50 hover:shadow-[0_0_12px_rgba(168,85,247,0.2)]" variant="outline">
                 {copied ? (
                   <>
-                    <Check className="w-4 h-4 mr-2" />
+                    <Check className="w-4 h-4 mr-2 text-cyan-400" />
                     Copied!
                   </>
                 ) : (
@@ -145,7 +145,7 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
                 const gId = createdGroup?.id;
                 handleClose(false);
                 if (gId) navigate(`/g/${gId}?onboarding=1`);
-              }} className="w-full gradient-primary">
+              }} className="w-full bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white border-0 shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)] transition-all duration-300">
                 Done
               </Button>
             </DialogFooter>
