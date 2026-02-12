@@ -171,6 +171,7 @@ export type Database = {
           group_id: string
           id: string
           name: string
+          packed_up: boolean
           status: string
         }
         Insert: {
@@ -182,6 +183,7 @@ export type Database = {
           group_id: string
           id?: string
           name?: string
+          packed_up?: boolean
           status?: string
         }
         Update: {
@@ -193,6 +195,7 @@ export type Database = {
           group_id?: string
           id?: string
           name?: string
+          packed_up?: boolean
           status?: string
         }
         Relationships: [

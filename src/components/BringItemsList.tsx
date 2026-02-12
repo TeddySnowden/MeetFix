@@ -15,9 +15,10 @@ import { toast } from "@/hooks/use-toast";
 interface BringItemsListProps {
   eventId: string;
   isOwner: boolean;
+  packedUp?: boolean;
 }
 
-export function BringItemsList({ eventId, isOwner }: BringItemsListProps) {
+export function BringItemsList({ eventId, isOwner, packedUp = false }: BringItemsListProps) {
   const { user } = useAuth();
   const { data: items, isLoading } = useBringItems(eventId);
   const claimItem = useClaimItem();
@@ -70,7 +71,7 @@ export function BringItemsList({ eventId, isOwner }: BringItemsListProps) {
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
           🎒 Bring Items
         </h3>
-        {isOwner && (
+        {isOwner && !packedUp && (
           <Button size="sm" variant="outline" onClick={() => setAddOpen(true)}>
             <Plus className="w-4 h-4 mr-1" />
             Add
@@ -106,7 +107,7 @@ export function BringItemsList({ eventId, isOwner }: BringItemsListProps) {
                   </p>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  {!isFull && !isMyItem && user && (
+                  {!isFull && !isMyItem && user && !packedUp && (
                     <Button
                       size="sm"
                       variant="outline"
@@ -118,7 +119,7 @@ export function BringItemsList({ eventId, isOwner }: BringItemsListProps) {
                       Claim
                     </Button>
                   )}
-                  {isMyItem && (
+                  {isMyItem && !packedUp && (
                     <Button
                       size="sm"
                       variant="ghost"
@@ -129,7 +130,7 @@ export function BringItemsList({ eventId, isOwner }: BringItemsListProps) {
                       Unclaim
                     </Button>
                   )}
-                  {isOwner && (
+                  {isOwner && !packedUp && (
                     <Button
                       size="icon"
                       variant="ghost"
@@ -148,9 +149,9 @@ export function BringItemsList({ eventId, isOwner }: BringItemsListProps) {
       ) : (
         <div className="bg-card rounded-2xl shadow-card p-6 text-center">
           <p className="text-muted-foreground text-sm">
-            {isOwner ? "Add items for members to claim." : "No items to bring yet."}
+            {packedUp ? "📦 Packed up!" : isOwner ? "Add items for members to claim." : "No items to bring yet."}
           </p>
-          {isOwner && (
+          {isOwner && !packedUp && (
             <Button
               variant="outline"
               className="mt-3"
