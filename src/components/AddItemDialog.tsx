@@ -92,6 +92,7 @@ export function AddItemDialog({ open, onOpenChange, eventId }: AddItemDialogProp
   };
 
   const handleSuggestionClick = (s: EmojiSuggestion) => {
+    setName(s.keyword.charAt(0).toUpperCase() + s.keyword.slice(1));
     setEmoji(s.emoji);
     setEmojiManuallySet(true);
     setSuggestions([]);
