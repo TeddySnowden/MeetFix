@@ -12,6 +12,7 @@ export interface Event {
   finalized_slot_id: string | null;
   finalized_date: string | null;
   finalized_activity: string | null;
+  packed_up: boolean;
 }
 
 export interface Activity {
@@ -418,6 +419,25 @@ export function useToggleVote() {
     },
     onSuccess: (_, vars) => {
       queryClient.invalidateQueries({ queryKey: ["time_slots", vars.eventId] });
+    },
+  });
+}
+
+export function usePackUpEvent() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ eventId }: { eventId: string }) => {
+      if (!user?.id) throw new Error("Not authenticated");
+      const { error } = await supabase
+        .from("events")
+        .update({ packed_up: true })
+        .eq("id", eventId);
+      if (error) throw error;
+    },
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["event", vars.eventId] });
     },
   });
 }

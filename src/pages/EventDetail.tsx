@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Check, Clock, Trophy, Calendar, Sparkles } from "lucide-react";
+import { ArrowLeft, Check, Clock, Trophy, Calendar, Sparkles, PackageCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Layout } from "@/components/Layout";
 import { Header } from "@/components/Header";
@@ -18,9 +18,11 @@ import {
   useToggleVote,
   useActivities,
   useToggleActivityVote,
+  usePackUpEvent,
   TimeSlot,
   Activity,
 } from "@/hooks/useEvents";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 
 function formatSlot(iso: string) {
@@ -40,6 +42,8 @@ export default function EventDetail() {
   const { data: activities, isLoading: activitiesLoading } = useActivities(eventId);
   const toggleVote = useToggleVote();
   const toggleActivityVote = useToggleActivityVote();
+  const packUpEvent = usePackUpEvent();
+  const queryClient = useQueryClient();
   const [finalizeOpen, setFinalizeOpen] = useState(false);
   const [memberCount, setMemberCount] = useState(1);
 
@@ -55,8 +59,25 @@ export default function EventDetail() {
       });
   }, [event?.group_id]);
 
+  // Realtime subscription for packed_up changes
+  useEffect(() => {
+    if (!eventId) return;
+    const channel = supabase
+      .channel(`event-packup-${eventId}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "events", filter: `id=eq.${eventId}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["event", eventId] });
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [eventId, queryClient]);
+
   const isFinalized = event?.status === "finalized";
   const isOwner = user && event && user.id === event.created_by;
+  const isPackedUp = event?.packed_up ?? false;
 
   const handleVote = (slot: TimeSlot) => {
     if (!user) {
@@ -146,6 +167,28 @@ export default function EventDetail() {
             )}
           </div>
         </div>
+      )}
+
+      {/* Pack Up button - owner only, finalized events */}
+      {isFinalized && isOwner && (
+        <Button
+          className="w-full mb-4 font-bold text-base tracking-wide rounded-xl transition-all"
+          style={{
+            background: isPackedUp ? '#374151' : '#0f8',
+            color: isPackedUp ? '#9ca3af' : '#000',
+            border: `2px solid ${isPackedUp ? '#4b5563' : '#0f8'}`,
+            boxShadow: isPackedUp ? 'none' : '0 0 12px #0f8, 0 0 24px #0f844',
+            cursor: isPackedUp ? 'default' : 'pointer',
+          }}
+          disabled={isPackedUp || packUpEvent.isPending}
+          onClick={() => {
+            if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
+            packUpEvent.mutate({ eventId: eventId! });
+          }}
+        >
+          <PackageCheck className="w-5 h-5 mr-2" />
+          {isPackedUp ? "Packed ✅" : "Pack Up ☑️"}
+        </Button>
       )}
 
       {isLoading ? (
@@ -303,7 +346,7 @@ export default function EventDetail() {
       {/* Bring Items - shown after finalization */}
       {isFinalized && eventId && (
         <div className="mt-6">
-          <BringItemsList eventId={eventId} isOwner={!!isOwner} />
+          <BringItemsList eventId={eventId} isOwner={!!isOwner} packedUp={isPackedUp} />
         </div>
       )}
 
