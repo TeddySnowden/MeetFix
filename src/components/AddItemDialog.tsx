@@ -26,7 +26,7 @@ interface AddItemDialogProps {
 export function AddItemDialog({ open, onOpenChange, eventId }: AddItemDialogProps) {
   const [name, setName] = useState("");
   const [emoji, setEmoji] = useState("📦");
-  const [maxQuantity, setMaxQuantity] = useState(6);
+  const [maxQuantity, setMaxQuantity] = useState<string>("6");
   const [suggestions, setSuggestions] = useState<EmojiSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [emojiManuallySet, setEmojiManuallySet] = useState(false);
@@ -73,17 +73,18 @@ export function AddItemDialog({ open, onOpenChange, eventId }: AddItemDialogProp
     if (!name.trim()) return;
 
     try {
+      const qty = Math.max(1, Math.min(50, parseInt(maxQuantity) || 1));
       await addItem.mutateAsync({
         eventId,
         name: name.trim(),
         emoji,
-        maxQuantity: Math.max(1, Math.min(50, maxQuantity)),
+        maxQuantity: qty,
       });
-      toast({ title: "Item added!", description: `${emoji} ${name.trim()} (max ${maxQuantity})` });
+      toast({ title: "Item added!", description: `${emoji} ${name.trim()} (max ${qty})` });
       onOpenChange(false);
       setName("");
       setEmoji("📦");
-      setMaxQuantity(6);
+      setMaxQuantity("6");
       setEmojiManuallySet(false);
       setSuggestions([]);
     } catch (err: any) {
@@ -186,7 +187,7 @@ export function AddItemDialog({ open, onOpenChange, eventId }: AddItemDialogProp
                 min={1}
                 max={50}
                 value={maxQuantity}
-                onChange={(e) => setMaxQuantity(Number(e.target.value) || 1)}
+                onChange={(e) => setMaxQuantity(e.target.value)}
                 className="mt-2 w-24"
               />
               <p className="text-xs text-muted-foreground mt-1">How many should be brought (1–50)</p>
