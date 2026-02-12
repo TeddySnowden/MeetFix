@@ -48,7 +48,7 @@ const Index = () => {
       {/* Top Bar */}
       <div className="px-6 pt-6 pb-2">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-black italic bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-black italic cyberpunk-logo tracking-tight">
             MeetFix
           </h1>
           {user ? (
