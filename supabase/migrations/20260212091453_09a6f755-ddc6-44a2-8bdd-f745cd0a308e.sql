@@ -1,0 +1,2 @@
+ALTER TABLE public.bring_items ADD COLUMN max_quantity integer NOT NULL DEFAULT 6;
+ALTER TABLE public.bring_items ADD CONSTRAINT bring_items_max_quantity_check CHECK (max_quantity >= 1 AND max_quantity <= 50);

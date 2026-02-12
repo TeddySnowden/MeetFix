@@ -60,16 +60,18 @@ export function useAddItem() {
       eventId,
       name,
       emoji,
+      maxQuantity = 6,
     }: {
       eventId: string;
       name: string;
       emoji: string;
+      maxQuantity?: number;
     }) => {
       if (!user?.id) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
         .from("bring_items")
-        .insert({ event_id: eventId, name, emoji, created_by: user.id })
+        .insert({ event_id: eventId, name, emoji, created_by: user.id, max_quantity: maxQuantity })
         .select()
         .single();
 
