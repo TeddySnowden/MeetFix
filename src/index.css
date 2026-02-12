@@ -180,15 +180,15 @@
 
   /* Cyberpunk glitch animation */
   .cyberpunk-glitch {
-    animation: glitch 5s infinite linear;
+    animation: glitch 10s infinite linear;
     border: 2px solid #00ff41;
   }
 
   /* JS glitch text effect */
   .glitch-text-active {
     text-shadow:
-      10px 0 #00ff41,
-      -10px 0 #ff0041;
+      5px 0 #00ff41,
+      -8px 0 #ff0041;
   }
 
   .glitch-scanline {
@@ -202,7 +202,7 @@
       rgba(0, 255, 65, 0.04) 2px,
       rgba(0, 255, 65, 0.04) 4px
     );
-    animation: scanline-scroll 0.2s linear;
+    animation: scanline-scroll 2s linear;
   }
 }
 
