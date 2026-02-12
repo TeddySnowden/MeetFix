@@ -393,6 +393,14 @@ export type Database = {
       }
       cleanup_expired_events: { Args: never; Returns: number }
       get_event_group_id: { Args: { event_id_input: string }; Returns: string }
+      get_group_by_invite_code: {
+        Args: { invite_code_input: string }
+        Returns: {
+          id: string
+          member_count: number
+          name: string
+        }[]
+      }
       get_item_group_id: { Args: { item_id_input: string }; Returns: string }
       is_event_creator: { Args: { event_id_input: string }; Returns: boolean }
       is_group_owner: { Args: { group_id_input: string }; Returns: boolean }
