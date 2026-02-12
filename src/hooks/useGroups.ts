@@ -205,9 +205,7 @@ export function useGroupByInviteCode(inviteCode: string | undefined) {
       if (!inviteCode) return null;
 
       const { data, error } = await supabase
-        .from("groups")
-        .select("*")
-        .eq("invite_code", inviteCode.toUpperCase())
+        .rpc("get_group_by_invite_code", { invite_code_input: inviteCode })
         .maybeSingle();
 
       if (error) throw error;
