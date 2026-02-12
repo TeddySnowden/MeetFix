@@ -94,6 +94,7 @@ export function AddItemDialog({ open, onOpenChange, eventId }: AddItemDialogProp
   const handleSuggestionClick = (s: EmojiSuggestion) => {
     setEmoji(s.emoji);
     setEmojiManuallySet(true);
+    setSuggestions([]);
     setShowSuggestions(false);
     inputRef.current?.focus();
   };
