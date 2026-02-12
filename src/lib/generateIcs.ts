@@ -6,11 +6,13 @@ export function downloadIcsFile({
   description,
   startDate,
   durationMinutes = 60,
+  filename = "MeetFix_event",
 }: {
   title: string;
   description: string;
   startDate: string; // ISO string
   durationMinutes?: number;
+  filename?: string;
 }) {
   const start = new Date(startDate);
   const end = new Date(start.getTime() + durationMinutes * 60000);
@@ -33,6 +35,14 @@ export function downloadIcsFile({
     "END:VCALENDAR",
   ].join("\r\n");
 
-  const dataUri = "data:text/calendar;charset=utf-8," + encodeURIComponent(ics);
-  window.open(dataUri, "_blank");
+  const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${filename}.ics`;
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

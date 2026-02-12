@@ -196,16 +196,18 @@ export default function EventDetail() {
                   return `${item.emoji || "📦"} ${item.name} x${myClaimCount}`;
                 });
               const desc = [
-                event.finalized_activity ? `Activity: ${event.finalized_activity}` : "",
-                myItems.length ? `\nYour Items:\n${myItems.join("\n")}` : "",
-              ].filter(Boolean).join("\n");
+                event.finalized_activity ? event.finalized_activity : "",
+                myItems.length ? myItems.join(", ") : "",
+              ].filter(Boolean).join(" - ");
 
+              const safeName = event.name.replace(/[^a-zA-Z0-9_]/g, "_");
               downloadIcsFile({
-                title: `${event.name} - Items Packed ☑️`,
+                title: `MeetFix: ${event.name} – Items Assigned! 🎉`,
                 description: desc,
                 startDate: event.finalized_date!,
+                filename: `MeetFix_${safeName}_items`,
               });
-              toast({ title: "Calendar file downloaded! 📅" });
+              toast({ title: "Calendar synced! 📅" });
             }}
           >
             <Download className="w-5 h-5 mr-2" />
