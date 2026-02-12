@@ -35,7 +35,7 @@ export function AddItemDialog({ open, onOpenChange, eventId }: AddItemDialogProp
   const addItem = useAddItem();
 
   useEffect(() => {
-    if (!name.trim()) {
+    if (!name.trim() || emojiManuallySet) {
       setSuggestions([]);
       setShowSuggestions(false);
       return;
@@ -44,10 +44,10 @@ export function AddItemDialog({ open, onOpenChange, eventId }: AddItemDialogProp
     setSuggestions(results);
     setShowSuggestions(results.length > 0);
 
-    // Auto-preview first suggestion emoji (unless user manually picked one)
-    if (results.length > 0 && !emojiManuallySet) {
+    // Auto-preview first suggestion emoji
+    if (results.length > 0) {
       setEmoji(results[0].emoji);
-    } else if (results.length === 0 && !emojiManuallySet) {
+    } else {
       setEmoji("📦");
     }
   }, [name, emojiManuallySet]);
