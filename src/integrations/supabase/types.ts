@@ -129,25 +129,31 @@ export type Database = {
       event_user_timeline: {
         Row: {
           created_at: string
+          dress_minutes: number | null
           dress_up_time: string | null
           event_id: string
           id: string
+          travel_minutes: number | null
           travel_time: string | null
           user_id: string
         }
         Insert: {
           created_at?: string
+          dress_minutes?: number | null
           dress_up_time?: string | null
           event_id: string
           id?: string
+          travel_minutes?: number | null
           travel_time?: string | null
           user_id: string
         }
         Update: {
           created_at?: string
+          dress_minutes?: number | null
           dress_up_time?: string | null
           event_id?: string
           id?: string
+          travel_minutes?: number | null
           travel_time?: string | null
           user_id?: string
         }

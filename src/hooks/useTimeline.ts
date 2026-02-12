@@ -8,6 +8,8 @@ export interface TimelineEntry {
   user_id: string;
   dress_up_time: string | null;
   travel_time: string | null;
+  dress_minutes: number | null;
+  travel_minutes: number | null;
   created_at: string;
 }
 
@@ -62,14 +64,17 @@ export function useUpsertTimeline() {
       eventId,
       dressUpTime,
       travelTime,
+      dressMinutes,
+      travelMinutes,
     }: {
       eventId: string;
       dressUpTime?: string | null;
       travelTime?: string | null;
+      dressMinutes?: number | null;
+      travelMinutes?: number | null;
     }) => {
       if (!user?.id) throw new Error("Not authenticated");
 
-      // Check if entry exists
       const { data: existing } = await supabase
         .from("event_user_timeline")
         .select("id")
@@ -81,6 +86,8 @@ export function useUpsertTimeline() {
         const updateData: Record<string, any> = {};
         if (dressUpTime !== undefined) updateData.dress_up_time = dressUpTime;
         if (travelTime !== undefined) updateData.travel_time = travelTime;
+        if (dressMinutes !== undefined) updateData.dress_minutes = dressMinutes;
+        if (travelMinutes !== undefined) updateData.travel_minutes = travelMinutes;
 
         const { error } = await supabase
           .from("event_user_timeline")
@@ -96,6 +103,8 @@ export function useUpsertTimeline() {
             user_id: user.id,
             dress_up_time: dressUpTime || null,
             travel_time: travelTime || null,
+            dress_minutes: dressMinutes ?? null,
+            travel_minutes: travelMinutes ?? null,
           });
 
         if (error) throw error;
