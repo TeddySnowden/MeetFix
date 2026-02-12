@@ -385,6 +385,7 @@ export type Database = {
         Args: { group_id_input: string }
         Returns: boolean
       }
+      cleanup_expired_events: { Args: never; Returns: number }
       get_event_group_id: { Args: { event_id_input: string }; Returns: string }
       get_item_group_id: { Args: { item_id_input: string }; Returns: string }
       is_event_creator: { Args: { event_id_input: string }; Returns: boolean }
