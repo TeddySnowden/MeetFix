@@ -195,17 +195,15 @@ export default function EventDetail() {
                   const myClaimCount = (item.claims || []).filter((c: any) => c.user_id === user?.id).length;
                   return `${item.emoji || "📦"} ${item.name} x${myClaimCount}`;
                 });
-              const desc = [
-                event.finalized_activity ? event.finalized_activity : "",
-                myItems.length ? myItems.join(", ") : "",
-              ].filter(Boolean).join(" - ");
+              const desc = myItems.length ? `Your Items:\n${myItems.join("\n")}` : "";
 
-              const safeName = event.name.replace(/[^a-zA-Z0-9_]/g, "_");
+              const safeEvent = event.name.replace(/[^a-zA-Z0-9_]/g, "_");
+              const safeActivity = (event.finalized_activity || "event").replace(/[^a-zA-Z0-9_]/g, "_");
               downloadIcsFile({
-                title: `MeetFix: ${event.name} – Items Assigned! 🎉`,
+                title: `${event.name} - ${event.finalized_activity || ""}`,
                 description: desc,
                 startDate: event.finalized_date!,
-                filename: `MeetFix_${safeName}_items`,
+                filename: `${safeEvent}_${safeActivity}`,
               });
               toast({ title: "Calendar synced! 📅" });
             }}
