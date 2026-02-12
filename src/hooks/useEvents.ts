@@ -291,6 +291,7 @@ export function useToggleActivityVote() {
       if (!user?.id) throw new Error("Not authenticated");
 
       if (currentlyVoted) {
+        // Deselect: just delete this vote
         const { error } = await supabase
           .from("activity_votes")
           .delete()
@@ -298,6 +299,13 @@ export function useToggleActivityVote() {
           .eq("user_id", user.id);
         if (error) throw error;
       } else {
+        // Enforce 1 vote: delete any existing activity vote for this event first
+        await supabase
+          .from("activity_votes")
+          .delete()
+          .eq("event_id", eventId)
+          .eq("user_id", user.id);
+
         const { error } = await supabase
           .from("activity_votes")
           .insert({ event_id: eventId, activity_id: activityId, user_id: user.id });
@@ -382,15 +390,22 @@ export function useToggleVote() {
       if (!user?.id) throw new Error("Not authenticated");
 
       if (currentlyVoted) {
+        // Deselect: just delete this vote
         const { error } = await supabase
           .from("time_slot_votes")
           .delete()
           .eq("event_id", eventId)
           .eq("time_slot_id", timeSlotId)
           .eq("user_id", user.id);
-
         if (error) throw error;
       } else {
+        // Enforce 1 vote: delete any existing vote for this event first
+        await supabase
+          .from("time_slot_votes")
+          .delete()
+          .eq("event_id", eventId)
+          .eq("user_id", user.id);
+
         const { error } = await supabase
           .from("time_slot_votes")
           .insert({
@@ -398,7 +413,6 @@ export function useToggleVote() {
             time_slot_id: timeSlotId,
             user_id: user.id,
           });
-
         if (error) throw error;
       }
     },
