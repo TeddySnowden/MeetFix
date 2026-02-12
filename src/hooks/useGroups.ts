@@ -58,10 +58,33 @@ export function useGroups() {
         countMap[c.group_id] = (countMap[c.group_id] || 0) + 1;
       });
 
-      return (groups || []).map((g: any) => ({
+      // Get latest event per group for sorting by last activity
+      const { data: latestEvents } = await supabase
+        .from("events")
+        .select("group_id, created_at")
+        .in("group_id", groupIds)
+        .order("created_at", { ascending: false });
+
+      const lastActivityMap: Record<string, string> = {};
+      (latestEvents || []).forEach((e: any) => {
+        if (!lastActivityMap[e.group_id]) {
+          lastActivityMap[e.group_id] = e.created_at;
+        }
+      });
+
+      const result = (groups || []).map((g: any) => ({
         ...g,
         member_count: countMap[g.id] || 0,
       }));
+
+      // Sort by last activity DESC (most active first), fallback to group created_at
+      result.sort((a, b) => {
+        const aTime = lastActivityMap[a.id] || a.created_at;
+        const bTime = lastActivityMap[b.id] || b.created_at;
+        return new Date(bTime).getTime() - new Date(aTime).getTime();
+      });
+
+      return result;
     },
     enabled: !!user,
   });

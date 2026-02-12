@@ -107,11 +107,21 @@ export function useGroupEventsWithSlots(groupId: string | undefined) {
         voteCountMap[v.event_id] = (voteCountMap[v.event_id] || 0) + 1;
       });
 
-      return events.map((e: any) => ({
+      const enriched = events.map((e: any) => ({
         ...e,
         first_slot_at: firstSlotMap[e.id] || null,
         total_votes: voteCountMap[e.id] || 0,
       }));
+
+      // Sort by earliest time slot ASC (nearest event first), nulls last
+      enriched.sort((a: EventWithSlotInfo, b: EventWithSlotInfo) => {
+        if (!a.first_slot_at && !b.first_slot_at) return 0;
+        if (!a.first_slot_at) return 1;
+        if (!b.first_slot_at) return -1;
+        return new Date(a.first_slot_at).getTime() - new Date(b.first_slot_at).getTime();
+      });
+
+      return enriched;
     },
     enabled: !!groupId && !!user,
   });
