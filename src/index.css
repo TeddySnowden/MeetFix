@@ -44,7 +44,7 @@
     /* Extended palette */
     --success: 152 60% 45%;
     --success-foreground: 0 0% 100%;
-    
+
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
@@ -172,19 +172,23 @@
 
   /* Gold winner border animation */
   .gold-winner-border {
-    box-shadow: 0 0 8px 2px #FFD700, 0 0 16px 4px #FFA50066;
+    box-shadow:
+      0 0 8px 2px #ffd700,
+      0 0 16px 4px #ffa50066;
     animation: gold-pulse 1.5s ease-in-out infinite;
   }
 
   /* Cyberpunk glitch animation */
   .cyberpunk-glitch {
-    animation: glitch 0.3s infinite linear;
+    animation: glitch 1s infinite linear;
     border: 2px solid #00ff41;
   }
 
   /* JS glitch text effect */
   .glitch-text-active {
-    text-shadow: 1px 0 #00ff41, -1px 0 #ff0041;
+    text-shadow:
+      1px 0 #00ff41,
+      -1px 0 #ff0041;
   }
 
   .glitch-scanline {
@@ -203,23 +207,43 @@
 }
 
 @keyframes scanline-scroll {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100%); }
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
 }
 
 @keyframes gold-pulse {
-  0%, 100% {
-    box-shadow: 0 0 8px 2px #FFD700, 0 0 16px 4px #FFA50066;
+  0%,
+  100% {
+    box-shadow:
+      0 0 8px 2px #ffd700,
+      0 0 16px 4px #ffa50066;
   }
   50% {
-    box-shadow: 0 0 14px 4px #FFA500, 0 0 24px 8px #FFD70066;
+    box-shadow:
+      0 0 14px 4px #ffa500,
+      0 0 24px 8px #ffd70066;
   }
 }
 
 @keyframes glitch {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-1px) skewY(1deg); }
-  40% { transform: translateX(1px) skewY(-1deg); }
-  60% { transform: translateX(-0.5px) skewY(0.5deg); }
-  80% { transform: translateX(0.5px) skewY(-0.5deg); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-1px) skewY(1deg);
+  }
+  40% {
+    transform: translateX(1px) skewY(-1deg);
+  }
+  60% {
+    transform: translateX(-0.5px) skewY(0.5deg);
+  }
+  80% {
+    transform: translateX(0.5px) skewY(-0.5deg);
+  }
 }
