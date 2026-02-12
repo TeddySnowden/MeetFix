@@ -436,6 +436,7 @@ export type Database = {
         Returns: boolean
       }
       cleanup_expired_events: { Args: never; Returns: number }
+      create_group: { Args: { group_name: string }; Returns: Json }
       get_event_group_id: { Args: { event_id_input: string }; Returns: string }
       get_group_by_invite_code: {
         Args: { invite_code_input: string }
