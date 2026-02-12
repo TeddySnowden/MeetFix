@@ -204,6 +204,39 @@
     );
     animation: scanline-scroll 2s linear;
   }
+
+  /* Cyberpunk AUTO-FIX VOTE button */
+  .autofix-vote-btn {
+    background: #00aa33;
+    color: #ffd700;
+    border: 2px solid #00ff41;
+    text-shadow:
+      0 0 6px #ffd700,
+      0 0 12px #ffd70066;
+    box-shadow:
+      0 0 8px #00ff4166,
+      0 0 20px #00ff4133,
+      inset 0 0 12px #00ff4122;
+    animation: autofix-glow 2s ease-in-out infinite;
+  }
+
+  .autofix-vote-btn:hover:not(:disabled) {
+    background: #00cc44;
+    box-shadow:
+      0 0 12px #00ff41aa,
+      0 0 30px #00ff4155,
+      inset 0 0 16px #00ff4133;
+    text-shadow:
+      0 0 8px #ffd700,
+      0 0 20px #ffd700aa;
+  }
+
+  .autofix-vote-btn:active:not(:disabled) {
+    box-shadow:
+      0 0 20px #00ff41cc,
+      0 0 40px #00ff4177,
+      inset 0 0 20px #00ff4144;
+  }
 }
 
 @keyframes scanline-scroll {
@@ -245,5 +278,21 @@
   }
   80% {
     transform: translateX(0.5px) skewY(-0.5deg);
+  }
+}
+
+@keyframes autofix-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 8px #00ff4166,
+      0 0 20px #00ff4133,
+      inset 0 0 12px #00ff4122;
+  }
+  50% {
+    box-shadow:
+      0 0 14px #00ff41aa,
+      0 0 30px #00ff4155,
+      inset 0 0 18px #00ff4133;
   }
 }
