@@ -441,3 +441,23 @@ export function usePackUpEvent() {
     },
   });
 }
+
+export function useReopenEvent() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ eventId }: { eventId: string }) => {
+      if (!user?.id) throw new Error("Not authenticated");
+      const { error } = await supabase
+        .from("events")
+        .update({ packed_up: false, status: "voting", finalized_slot_id: null, finalized_date: null, finalized_activity: null })
+        .eq("id", eventId);
+      if (error) throw error;
+    },
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["event", vars.eventId] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+    },
+  });
+}
