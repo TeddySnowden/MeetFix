@@ -89,38 +89,66 @@ const GetReady = () => {
   const DRESS_PRESETS = [15, 30, 45, 60, 120];
   const TRAVEL_PRESETS = [30, 60, 90, 120];
 
+  // Recalculate both times from minutes: dress_start = event - (dress + travel), travel_start = event - travel
+  const recalcTimes = (dressMin: number | null, travelMin: number | null, eventDate: Date) => {
+    const travelMs = (travelMin || 0) * 60000;
+    const dressMs = (dressMin || 0) * 60000;
+    const travelTime = travelMin != null ? new Date(eventDate.getTime() - travelMs).toISOString() : null;
+    const dressUpTime = dressMin != null ? new Date(eventDate.getTime() - dressMs - travelMs).toISOString() : null;
+    return { dressUpTime, travelTime };
+  };
+
   const handlePreset = async (minutes: number) => {
     if (!heroEvent?.id || !heroEvent.finalized_date) return;
-
     const eventDate = new Date(heroEvent.finalized_date);
-    const dt = new Date(eventDate.getTime() - minutes * 60000);
-    const iso = dt.toISOString();
 
-    if (timePickerOpen === "dress") {
-      await upsertTimeline.mutateAsync({ eventId: heroEvent.id, dressUpTime: iso });
-    } else {
-      await upsertTimeline.mutateAsync({ eventId: heroEvent.id, travelTime: iso });
-    }
+    const currentDressMin = myTimeline?.dress_minutes ?? null;
+    const currentTravelMin = myTimeline?.travel_minutes ?? null;
+
+    const newDressMin = timePickerOpen === "dress" ? minutes : currentDressMin;
+    const newTravelMin = timePickerOpen === "travel" ? minutes : currentTravelMin;
+
+    const { dressUpTime, travelTime } = recalcTimes(newDressMin, newTravelMin, eventDate);
+
+    await upsertTimeline.mutateAsync({
+      eventId: heroEvent.id,
+      dressUpTime,
+      travelTime,
+      dressMinutes: newDressMin,
+      travelMinutes: newTravelMin,
+    });
 
     setTimePickerOpen(null);
     setTimeValue("");
   };
 
   const handleSetTime = async () => {
-    if (!heroEvent?.id || !timeValue) return;
+    if (!heroEvent?.id || !timeValue || !heroEvent.finalized_date) return;
 
-    const eventDate = new Date(heroEvent.finalized_date!);
+    const eventDate = new Date(heroEvent.finalized_date);
     const [h, m] = timeValue.split(":").map(Number);
-    const dt = new Date(eventDate);
-    dt.setHours(h, m, 0, 0);
+    const targetTime = new Date(eventDate);
+    targetTime.setHours(h, m, 0, 0);
 
-    const iso = dt.toISOString();
+    // Derive minutes from the exact time input
+    const diffMinutes = Math.round((eventDate.getTime() - targetTime.getTime()) / 60000);
+    if (diffMinutes < 0) return;
 
-    if (timePickerOpen === "dress") {
-      await upsertTimeline.mutateAsync({ eventId: heroEvent.id, dressUpTime: iso });
-    } else {
-      await upsertTimeline.mutateAsync({ eventId: heroEvent.id, travelTime: iso });
-    }
+    const currentDressMin = myTimeline?.dress_minutes ?? null;
+    const currentTravelMin = myTimeline?.travel_minutes ?? null;
+
+    const newDressMin = timePickerOpen === "dress" ? diffMinutes : currentDressMin;
+    const newTravelMin = timePickerOpen === "travel" ? diffMinutes : currentTravelMin;
+
+    const { dressUpTime, travelTime } = recalcTimes(newDressMin, newTravelMin, eventDate);
+
+    await upsertTimeline.mutateAsync({
+      eventId: heroEvent.id,
+      dressUpTime,
+      travelTime,
+      dressMinutes: newDressMin,
+      travelMinutes: newTravelMin,
+    });
 
     setTimePickerOpen(null);
     setTimeValue("");
@@ -196,7 +224,9 @@ const GetReady = () => {
       color: "from-cyan-400 to-teal-500",
       bgColor: "bg-cyan-500/20",
       textColor: "text-cyan-400",
-      detail: formatTimeOnly(myTimeline?.dress_up_time),
+      detail: myTimeline?.dress_up_time
+        ? `${formatTimeOnly(myTimeline.dress_up_time)}${myTimeline.dress_minutes ? ` (${myTimeline.dress_minutes}m prep${myTimeline.travel_minutes ? ` + ${myTimeline.travel_minutes}m travel` : ""})` : ""}`
+        : null,
       action: "dress" as const,
     },
     {
@@ -207,7 +237,9 @@ const GetReady = () => {
       color: "from-emerald-400 to-green-500",
       bgColor: "bg-emerald-500/20",
       textColor: "text-emerald-400",
-      detail: formatTimeOnly(myTimeline?.travel_time),
+      detail: myTimeline?.travel_time
+        ? `${formatTimeOnly(myTimeline.travel_time)}${myTimeline.travel_minutes ? ` (${myTimeline.travel_minutes}m)` : ""}`
+        : null,
       action: "travel" as const,
     },
   ];
