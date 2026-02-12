@@ -113,7 +113,7 @@ export function useClaimItem() {
 
       const { error } = await supabase
         .from("item_claims")
-        .upsert({ item_id: itemId, user_id: user.id }, { onConflict: "item_id" });
+        .upsert({ item_id: itemId, user_id: user.id }, { onConflict: "user_id" });
 
       if (error) throw error;
       return { eventId };
