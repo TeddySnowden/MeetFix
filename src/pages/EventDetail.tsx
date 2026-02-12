@@ -189,13 +189,16 @@ export default function EventDetail() {
             }}
             onClick={() => {
               if (navigator.vibrate) navigator.vibrate(30);
-              const itemList = (bringItems || [])
-                .map((i: any) => `${i.emoji || "📦"} ${i.name} (x${i.max_quantity})`)
-                .join("\\n");
+              const myItems = (bringItems || [])
+                .filter((item: any) => (item.claims || []).some((c: any) => c.user_id === user?.id))
+                .map((item: any) => {
+                  const myClaimCount = (item.claims || []).filter((c: any) => c.user_id === user?.id).length;
+                  return `${item.emoji || "📦"} ${item.name} x${myClaimCount}`;
+                });
               const desc = [
                 event.finalized_activity ? `Activity: ${event.finalized_activity}` : "",
-                itemList ? `\\nBring Items:\\n${itemList}` : "",
-              ].filter(Boolean).join("\\n");
+                myItems.length ? `\nYour Items:\n${myItems.join("\n")}` : "",
+              ].filter(Boolean).join("\n");
 
               downloadIcsFile({
                 title: `${event.name} - Items Packed ☑️`,
