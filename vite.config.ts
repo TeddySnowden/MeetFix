@@ -1,6 +1,16 @@
-/** @type {import('vite').UserConfig} */
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
 
-export default {
+// https://vitejs.dev/config/
+export default defineConfig({
   base: '/meetfix/',
-  // Other configurations can go here
-};
+  server: {
+    // existing server settings here...
+  },
+  plugins: [vue(), /* other plugins */],
+  resolve: {
+    alias: {
+      // existing path aliases here...
+    },
+  },
+});
