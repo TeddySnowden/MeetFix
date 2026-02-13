@@ -12,6 +12,7 @@ import Groups from "./pages/Groups";
 import GetReady from "./pages/GetReady";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import { PwaInstallButton } from "./components/PwaInstallButton";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <PwaInstallButton />
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />

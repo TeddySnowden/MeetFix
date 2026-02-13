@@ -333,6 +333,11 @@
   100% { background-position: 0% 50%; }
 }
 
+@keyframes pwa-pulse {
+  0%, 100% { box-shadow: 0 0 14px rgba(0,255,65,0.4); }
+  50% { box-shadow: 0 0 24px rgba(0,255,65,0.7), 0 0 40px rgba(0,255,65,0.3); }
+}
+
 .cyberpunk-logo {
   background: linear-gradient(135deg, #a855f7, #06b6d4, #a855f7, #06b6d4);
   background-size: 300% 300%;
