@@ -12,12 +12,7 @@ import { ChecklistModal } from "@/components/ChecklistModal";
 import { useState } from "react";
 import { User, Clock, Sparkles, Calendar, Plus, CheckSquare, Users, ChevronRight } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { format } from "date-fns";
 
 const Index = () => {
@@ -54,30 +49,26 @@ const Index = () => {
           </h1>
           <div className="flex-1 flex justify-end">
           {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-1">
-                  <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/20">
-                    <Avatar className="h-full w-full">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => navigate("/profile")}
+                    className="w-[36px] h-[36px] rounded-full bg-black/50 backdrop-blur-md border border-[#00ff41] shadow-[0_0_12px_rgba(0,255,65,0.3)] hover:shadow-[0_0_20px_rgba(0,255,65,0.5)] transition-all flex items-center justify-center"
+                  >
+                    <Avatar className="h-8 w-8">
                       <AvatarImage src={user.user_metadata?.avatar_url} />
-                      <AvatarFallback className="bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 text-white text-sm font-bold">
-                        {firstName.charAt(0).toUpperCase()}
+                      <AvatarFallback className="bg-transparent">
+                        <User className="w-5 h-5 text-[#00ffff] drop-shadow-[0_0_6px_#00ffff]" />
                       </AvatarFallback>
                     </Avatar>
-                  </div>
-                  <span className="text-white/50 text-xs">▼</span>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-black/90 border-white/20 text-white">
-                <div className="p-2">
-                  <p className="text-sm font-medium">{user.user_metadata?.full_name || "User"}</p>
-                  <p className="text-xs text-white/60">{user.email}</p>
-                </div>
-                <DropdownMenuItem onClick={signOut} className="text-red-400 cursor-pointer">
-                  Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="bg-black/90 border-[#00ff41] text-[#00ffff]">
+                  Profile
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           ) : (
             <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
               <User className="w-5 h-5 text-white/60" />
@@ -204,13 +195,6 @@ const Index = () => {
             >
               <Users className="w-6 h-6 text-white/60" />
               <span className="text-sm font-semibold text-white/60">My Groups</span>
-            </button>
-            <button
-              className="bg-gradient-to-br from-purple-500/20 to-cyan-600/10 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6 flex flex-col items-center gap-3 hover:scale-[1.02] transition-all"
-              onClick={() => navigate("/profile")}
-            >
-              <User className="w-6 h-6 text-[#00ffff] drop-shadow-[0_0_6px_#00ffff]" />
-              <span className="text-sm font-semibold text-[#00ffff]">Profile</span>
             </button>
           </div>
         </div>
