@@ -205,6 +205,13 @@ const Index = () => {
               <Users className="w-6 h-6 text-white/60" />
               <span className="text-sm font-semibold text-white/60">My Groups</span>
             </button>
+            <button
+              className="bg-gradient-to-br from-purple-500/20 to-cyan-600/10 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6 flex flex-col items-center gap-3 hover:scale-[1.02] transition-all"
+              onClick={() => navigate("/profile")}
+            >
+              <User className="w-6 h-6 text-[#00ffff] drop-shadow-[0_0_6px_#00ffff]" />
+              <span className="text-sm font-semibold text-[#00ffff]">Profile</span>
+            </button>
           </div>
         </div>
       )}

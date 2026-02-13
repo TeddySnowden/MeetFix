@@ -10,6 +10,7 @@ import GroupDetail from "./pages/GroupDetail";
 import EventDetail from "./pages/EventDetail";
 import Groups from "./pages/Groups";
 import GetReady from "./pages/GetReady";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/e/:eventId" element={<EventDetail />} />
             <Route path="/groups" element={<Groups />} />
             <Route path="/get-ready" element={<GetReady />} />
+            <Route path="/profile" element={<Profile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
