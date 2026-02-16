@@ -1,6 +1,6 @@
 {
-  "name": "Meetfix",
-  "short_name": "Meetfix",
+  "name": "MeetFix",
+  "short_name": "MeetFix",
   "start_url": "/",
   "display": "standalone",
   "theme_color": "#00ff41",
