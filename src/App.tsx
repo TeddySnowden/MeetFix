@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import JoinGroup from "./pages/JoinGroup";
@@ -12,6 +12,7 @@ import Groups from "./pages/Groups";
 import GetReady from "./pages/GetReady";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import AuthCallback from "./pages/AuthCallback";
 import { PwaInstallButton } from "./components/PwaInstallButton";
 
 const queryClient = new QueryClient();
@@ -23,9 +24,10 @@ const App = () => (
         <Toaster />
         <Sonner />
         <PwaInstallButton />
-        <BrowserRouter>
+        <HashRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<AuthCallback />} />
             <Route path="/join/:inviteCode" element={<JoinGroup />} />
             <Route path="/invite/:inviteCode" element={<JoinGroup />} />
             <Route path="/g/:groupId" element={<GroupDetail />} />
@@ -36,7 +38,7 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
+        </HashRouter>
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>

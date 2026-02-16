@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: "https://teddysnowden.github.io/MeetFix/",
+      redirect_uri: "https://teddysnowden.github.io/MeetFix/#/auth",
     });
 
     if (result.redirected) {
