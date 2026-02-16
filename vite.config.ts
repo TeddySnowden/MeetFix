@@ -10,5 +10,7 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
-  // Additional configurations can go here
+  server: {
+    port: 8080,
+  },
 });
