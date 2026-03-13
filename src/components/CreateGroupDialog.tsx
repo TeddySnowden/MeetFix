@@ -30,7 +30,7 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
   const navigate = useNavigate();
 
   const inviteLink = createdGroup
-    ? `${window.location.origin}/join/${createdGroup.invite_code}`
+    ? `https://teddysnowden.github.io/MeetFix/#/join/${createdGroup.invite_code}`
     : "";
 
   const handleSubmit = async (e: React.FormEvent) => {

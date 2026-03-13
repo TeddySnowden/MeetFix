@@ -1,7 +1,9 @@
 {
   "name": "MeetFix",
   "short_name": "MeetFix",
-  "start_url": "/",
+  "description": "Plan events, vote on dates, and coordinate your group effortlessly.",
+  "start_url": "/MeetFix/",
+  "scope": "/MeetFix/",
   "display": "standalone",
   "theme_color": "#00ff41",
   "background_color": "#0a0a0a",
