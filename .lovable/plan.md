@@ -1,54 +1,56 @@
 
-## Elemzés: Mi az aktuális helyzet?
 
-### Screenshot alapján: az app BETÖLT a GitHub Pages-en
+# Profile Screen -- Cyberpunk Neon Theme
 
-A screenshot egyértelműen mutatja:
-- "MeetFix" felirat megjelenik (helyes branding)
-- Hero kártya látható: "Plan group meetups effortlessly"
-- "Continue with Google" gomb megjelenik
-- "Guest mode active" szöveg látható
-- PWA telepítő gomb (jobb alsó sarok)
+## Overview
+Create a new Profile page adapted from the reference `ProfileScreen.tsx.txt`, restyled with the MeetFix V2 cyberpunk neon theme, and wired into the existing auth/data hooks. Since there is no `profiles` table in the database, the profile will use data from the auth user and existing group/event data.
 
-Ez azt jelenti: **az app betölt, a Supabase kapcsolat működik** (a `VITE_SUPABASE_URL` és `VITE_SUPABASE_PUBLISHABLE_KEY` sikeresen be lettek állítva).
+## What Gets Built
 
-### Mi a probléma a Google bejelentkezéssel?
+### 1. New Page: `src/pages/Profile.tsx`
+Adapted from the reference file, but rewritten to:
+- Use `useAuth()` instead of the non-existent `useApp()` context
+- Use `useGroups()` for group data
+- Use `useNavigate()` / `navigate(-1)` for back navigation (matching app pattern)
+- Remove features that have no backing data (badges, leaderboard, streak, attendance rate) -- these will be shown as placeholder/coming-soon sections
+- Remove translations (the app doesn't have i18n)
 
-Az auth logokból kritikus hiba látható:
-```
-"error": "missing OAuth secret"
-"msg": "400: Unsupported provider: missing OAuth secret"
-```
-Ez azt jelenti: a Supabase projektben **nincs beállítva a Google OAuth Client ID és Secret**. A natív `supabase.auth.signInWithOAuth({ provider: "google" })` hívás emiatt 400 hibával tér vissza.
+### 2. Cyberpunk Neon Styling (exact specs)
 
-### A tényleges probléma gyökere
-
-Az `useAuth.tsx`-ben a Google signin natív Supabase OAuth-ot használ:
-```ts
-supabase.auth.signInWithOAuth({ provider: "google", ... })
-```
-
-Ez a Supabase saját Google OAuth integrációját hívja, aminek szüksége van Google Client ID + Secret beállítására a Supabase Authentication > Providers > Google menüben.
-
-**VISZONT**: A projekt rendelkezik `src/integrations/lovable/index.ts` fájllal, ami a `@lovable.dev/cloud-auth-js` csomagot használja — ez a Lovable Cloud managed Google OAuth, ami NEM igényel külön Google Console beállítást.
-
-A megoldás: migrálni a `signInWithGoogle` függvényt a `lovable.auth.signInWithOAuth("google")` hívásra a `src/hooks/useAuth.tsx`-ben és a `src/components/GoogleSignInButton.tsx`-ben.
-
-### Összefoglalás
-
-| Komponens | Státusz |
+| Element | Style |
 |---|---|
-| App betöltés | MŰKÖDIK |
-| Supabase DB kapcsolat | MŰKÖDIK |
-| Google bejelentkezés | HIBÁS - missing OAuth secret |
+| Page background | `background: linear-gradient(135deg, #0a0a0a 0%, #1a0033 50%, #000 100%)` |
+| Text headings | `color: #00ffff; text-shadow: 0 0 10px #00ffff` |
+| Cards | `bg-black/40 border border-[#00ff41] shadow-[0_0_20px_rgba(0,255,65,0.15)]` |
+| Badges | `bg-[#00ff41]/20 border-[#00ff41] rounded-xl` with neon glow |
+| Progress bars | Gradient from `#00ff41` to `#00ffff` |
+| Avatar | `border-[#ff00ff] shadow-[0_0_20px_rgba(255,0,255,0.4)]` |
+| Streak flame | `color: #ffaa00; text-shadow: 0 0 10px #ffaa00` |
+| Buttons | Purple-to-cyan gradient with hover pulse (matching existing dialogs) |
 
-### Terv
+### 3. Sections on the Profile Page
+- **Header**: Back button + "Profile" title (neon cyan)
+- **User Card**: Avatar (magenta glow border), display name, email, streak (placeholder: 0), stats grid (groups count from real data, events attended as placeholder)
+- **Account Card**: Shows linked Google account + Sign Out button
+- **Badges Card**: Show all badges as locked/coming-soon with cyberpunk styling
+- **Groups Card**: Real group data from `useGroups()`, each group navigates to `/g/:id`
 
-**1. `src/hooks/useAuth.tsx`** — `signInWithGoogle` metódus cseréje:
-- `supabase.auth.signInWithOAuth({ provider: "google" })` helyett `lovable.auth.signInWithOAuth("google", { redirect_uri: "https://teddysnowden.github.io/MeetFix/#/auth" })`
+### 4. Route Addition: `src/App.tsx`
+- Add `<Route path="/profile" element={<Profile />} />`
 
-**2. `src/components/GoogleSignInButton.tsx`** — ugyanaz, nem kell változtatni, mert a `signInWithGoogle` a `useAuth` hookból jön, tehát automatikusan frissül.
+### 5. Navigation: Homepage Quick Actions
+- Add a "Profile" button to the quick actions grid on `src/pages/Index.tsx`
+- Neon user icon (`User` from lucide-react)
+- Navigates to `/profile`
 
-**3. `src/pages/AuthCallback.tsx`** — ellenőrzöm, megfelelően kezeli-e a Lovable Cloud OAuth visszatérést.
+## Technical Notes
+- No database changes needed -- all data comes from `useAuth()` and `useGroups()`
+- No new dependencies required
+- Custom components from the reference (GamerCard, NeonBadge, ProgressBar) will NOT be created as separate components; their styling will be inlined using Tailwind classes matching the cyberpunk spec
+- The Progress component from `src/components/ui/progress.tsx` will be used for progress bars, with custom className overrides for the neon gradient
 
-A `lovable.auth.signInWithOAuth` a `src/integrations/lovable/index.ts`-ben már implementálva van — csak az `useAuth.tsx`-ben kell átváltani.
+## Files Changed
+1. **New**: `src/pages/Profile.tsx` -- full profile page
+2. **Edit**: `src/App.tsx` -- add `/profile` route
+3. **Edit**: `src/pages/Index.tsx` -- add Profile quick action button
+
