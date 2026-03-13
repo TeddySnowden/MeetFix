@@ -1,56 +1,78 @@
 
+## Root cause analysis
 
-# Profile Screen -- Cyberpunk Neon Theme
+There are **3 separate issues** causing the blank page on GitHub Pages:
 
-## Overview
-Create a new Profile page adapted from the reference `ProfileScreen.tsx.txt`, restyled with the MeetFix V2 cyberpunk neon theme, and wired into the existing auth/data hooks. Since there is no `profiles` table in the database, the profile will use data from the auth user and existing group/event data.
+### Issue 1: `index.html` manifest link uses absolute path (no subpath)
+```html
+<link rel="manifest" href="/manifest.json" />
+```
+This resolves to `https://teddysnowden.github.io/manifest.json` (404). Should be `/MeetFix/manifest.json`.
 
-## What Gets Built
+### Issue 2: `index.html` service worker registration uses wrong path
+```js
+navigator.serviceWorker.register('/sw.js');
+```
+This resolves to `https://teddysnowden.github.io/sw.js` (404). Should be `/MeetFix/sw.js`.
 
-### 1. New Page: `src/pages/Profile.tsx`
-Adapted from the reference file, but rewritten to:
-- Use `useAuth()` instead of the non-existent `useApp()` context
-- Use `useGroups()` for group data
-- Use `useNavigate()` / `navigate(-1)` for back navigation (matching app pattern)
-- Remove features that have no backing data (badges, leaderboard, streak, attendance rate) -- these will be shown as placeholder/coming-soon sections
-- Remove translations (the app doesn't have i18n)
+### Issue 3: GitHub Actions — missing GitHub Secrets (user must set manually)
+The workflow injects `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` from repo secrets. If these are **not set** in the GitHub repository secrets, the build compiles with `undefined` values → `createClient(undefined, undefined)` → the app crashes silently on load (blank white page).
 
-### 2. Cyberpunk Neon Styling (exact specs)
+The Supabase client reads:
+```ts
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;       // undefined if secret missing
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY; // undefined
+```
+`createClient(undefined, undefined)` throws, causing a blank screen.
 
-| Element | Style |
-|---|---|
-| Page background | `background: linear-gradient(135deg, #0a0a0a 0%, #1a0033 50%, #000 100%)` |
-| Text headings | `color: #00ffff; text-shadow: 0 0 10px #00ffff` |
-| Cards | `bg-black/40 border border-[#00ff41] shadow-[0_0_20px_rgba(0,255,65,0.15)]` |
-| Badges | `bg-[#00ff41]/20 border-[#00ff41] rounded-xl` with neon glow |
-| Progress bars | Gradient from `#00ff41` to `#00ffff` |
-| Avatar | `border-[#ff00ff] shadow-[0_0_20px_rgba(255,0,255,0.4)]` |
-| Streak flame | `color: #ffaa00; text-shadow: 0 0 10px #ffaa00` |
-| Buttons | Purple-to-cyan gradient with hover pulse (matching existing dialogs) |
+### Issue 4: Console warning (non-blocking, but fix anyway)
+`Badge` and `ChecklistModal` components receive refs but aren't wrapped in `React.forwardRef`. These are warnings, not blank-page causes.
 
-### 3. Sections on the Profile Page
-- **Header**: Back button + "Profile" title (neon cyan)
-- **User Card**: Avatar (magenta glow border), display name, email, streak (placeholder: 0), stats grid (groups count from real data, events attended as placeholder)
-- **Account Card**: Shows linked Google account + Sign Out button
-- **Badges Card**: Show all badges as locked/coming-soon with cyberpunk styling
-- **Groups Card**: Real group data from `useGroups()`, each group navigates to `/g/:id`
+---
 
-### 4. Route Addition: `src/App.tsx`
-- Add `<Route path="/profile" element={<Profile />} />`
+## What I will fix (code changes)
 
-### 5. Navigation: Homepage Quick Actions
-- Add a "Profile" button to the quick actions grid on `src/pages/Index.tsx`
-- Neon user icon (`User` from lucide-react)
-- Navigates to `/profile`
+**File: `index.html`**
+- Change `href="/manifest.json"` → `href="/MeetFix/manifest.json"`
+- Change `navigator.serviceWorker.register('/sw.js')` → `navigator.serviceWorker.register('/MeetFix/sw.js')`
 
-## Technical Notes
-- No database changes needed -- all data comes from `useAuth()` and `useGroups()`
-- No new dependencies required
-- Custom components from the reference (GamerCard, NeonBadge, ProgressBar) will NOT be created as separate components; their styling will be inlined using Tailwind classes matching the cyberpunk spec
-- The Progress component from `src/components/ui/progress.tsx` will be used for progress bars, with custom className overrides for the neon gradient
+**File: `src/integrations/supabase/client.ts`** — **AUTO-GENERATED, cannot edit**
+Instead, add a crash guard in `src/main.tsx` that shows a readable error if env vars are missing, to help diagnose production builds.
 
-## Files Changed
-1. **New**: `src/pages/Profile.tsx` -- full profile page
-2. **Edit**: `src/App.tsx` -- add `/profile` route
-3. **Edit**: `src/pages/Index.tsx` -- add Profile quick action button
+Actually — the client.ts is auto-generated and always uses `import.meta.env.VITE_SUPABASE_URL`. The real fix is ensuring the GitHub secrets are set. I can add a fallback/guard in `src/App.tsx` or `src/main.tsx` that detects missing env vars and renders a helpful message instead of crashing silently.
 
+**File: `src/main.tsx`** — add an early guard:
+```tsx
+if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) {
+  // render error message
+}
+```
+
+---
+
+## What the user must do manually (GitHub repository settings)
+
+The user needs to add 2 repository secrets in GitHub:
+
+1. Go to: `https://github.com/teddysnowden/MeetFix/settings/secrets/actions`
+2. Click **"New repository secret"** and add:
+   - Name: `VITE_SUPABASE_URL` → Value: the Supabase project URL
+   - Name: `VITE_SUPABASE_PUBLISHABLE_KEY` → Value: the anon/publishable key
+
+The values come from the Lovable Cloud backend (shown in the plan to user).
+
+The Supabase URL for this project is: `https://pohaovjuslsykzwdrcsp.supabase.co`
+The anon key is: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvaGFvdmp1c2xzeWt6d2RyY3NwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2MzM3MTYsImV4cCI6MjA4NjIwOTcxNn0.hLGMLeMAkwZMJdzPPia_N5xEdvagPmBjG0fDy30JShw`
+
+---
+
+## Plan summary
+
+**Code fixes (I make these):**
+1. `index.html` — fix manifest and service worker paths to include `/MeetFix/` prefix
+2. `src/main.tsx` — add env var guard to show a clear error message instead of blank screen if secrets are missing
+
+**Manual steps (user does these in GitHub):**
+1. Add `VITE_SUPABASE_URL` secret → `https://pohaovjuslsykzwdrcsp.supabase.co`
+2. Add `VITE_SUPABASE_PUBLISHABLE_KEY` secret → the anon key above
+3. After adding secrets, re-run the GitHub Actions workflow (or push a commit to main) to trigger a new build with the correct env vars
