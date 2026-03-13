@@ -4,7 +4,7 @@ import path from 'path';
 import { componentTagger } from 'lovable-tagger';
 
 export default defineConfig(({ mode }) => ({
-  base: '/MeetFix/',
+  base: process.env.GITHUB_PAGES === 'true' ? '/MeetFix/' : '/',
   server: {
     host: "::",
     port: 8080,
