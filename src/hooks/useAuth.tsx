@@ -37,15 +37,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signInWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: "https://teddysnowden.github.io/MeetFix/#/auth",
-      },
+    const redirectUri = location.hostname.includes("github.io")
+      ? "https://teddysnowden.github.io/MeetFix/#/auth"
+      : `${window.location.origin}/#/auth`;
+
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: redirectUri,
     });
-    if (error) {
-      console.error("Sign in failed:", error.message);
-      throw error;
+    if (result.error) {
+      console.error("Sign in failed:", result.error.message);
+      throw result.error;
     }
   };
 
