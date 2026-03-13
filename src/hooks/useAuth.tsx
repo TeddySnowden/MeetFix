@@ -38,8 +38,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     const redirectUri = location.hostname.includes("github.io")
-      ? "https://teddysnowden.github.io/MeetFix/#/auth"
-      : `${window.location.origin}/#/auth`;
+      ? "https://teddysnowden.github.io/MeetFix/"
+      : window.location.origin + "/";
 
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: redirectUri,
