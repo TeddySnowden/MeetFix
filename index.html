@@ -23,7 +23,8 @@
     <script type="module" src="/src/main.tsx"></script>
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/MeetFix/sw.js');
+        var swPath = location.hostname.includes('github.io') ? '/MeetFix/sw.js' : '/sw.js';
+        navigator.serviceWorker.register(swPath);
       }
     </script>
   </body>

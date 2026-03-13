@@ -1,10 +1,12 @@
-const CACHE_NAME = "meetfix-v1";
+const CACHE_NAME = "meetfix-v2";
+const IS_GITHUB_PAGES = self.location.hostname.includes('github.io');
+const BASE = IS_GITHUB_PAGES ? '/MeetFix' : '';
 const ASSETS_TO_CACHE = [
-  "/",
-  "/index.html",
-  "/manifest.json",
-  "/icon-192.png",
-  "/icon-512.png",
+  BASE + '/',
+  BASE + '/index.html',
+  BASE + '/manifest.json',
+  BASE + '/icon-192.png',
+  BASE + '/icon-512.png',
 ];
 
 self.addEventListener("install", (event) => {
